@@ -1,0 +1,33 @@
+name: sudoku
+description: "A complete Sudoku mobile app built with Flutter."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.3.5
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.15
+  freezed: ^2.5.7
+  json_serializable: ^6.9.0
+  riverpod_generator: ^2.6.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/puzzles/easy.json
+    - assets/puzzles/medium.json
+    - assets/puzzles/hard.json

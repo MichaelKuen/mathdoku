@@ -1,0 +1,403 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'cell.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+Cell _$CellFromJson(Map<String, dynamic> json) {
+  return _Cell.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Cell {
+  int get value => throw _privateConstructorUsedError;
+  int get row => throw _privateConstructorUsedError;
+  int get col => throw _privateConstructorUsedError;
+  bool get isFixed => throw _privateConstructorUsedError;
+  bool get isSelected => throw _privateConstructorUsedError;
+  bool get isHighlighted => throw _privateConstructorUsedError;
+  bool get isError => throw _privateConstructorUsedError;
+  CellStatus get blockStatus => throw _privateConstructorUsedError;
+  CellStatus get rowStatus => throw _privateConstructorUsedError;
+  CellStatus get colStatus => throw _privateConstructorUsedError;
+  Set<int> get notes => throw _privateConstructorUsedError;
+
+  /// Serializes this Cell to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Cell
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CellCopyWith<Cell> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $CellCopyWith<$Res> {
+  factory $CellCopyWith(Cell value, $Res Function(Cell) then) =
+      _$CellCopyWithImpl<$Res, Cell>;
+  @useResult
+  $Res call({
+    int value,
+    int row,
+    int col,
+    bool isFixed,
+    bool isSelected,
+    bool isHighlighted,
+    bool isError,
+    CellStatus blockStatus,
+    CellStatus rowStatus,
+    CellStatus colStatus,
+    Set<int> notes,
+  });
+}
+
+/// @nodoc
+class _$CellCopyWithImpl<$Res, $Val extends Cell>
+    implements $CellCopyWith<$Res> {
+  _$CellCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Cell
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? value = null,
+    Object? row = null,
+    Object? col = null,
+    Object? isFixed = null,
+    Object? isSelected = null,
+    Object? isHighlighted = null,
+    Object? isError = null,
+    Object? blockStatus = null,
+    Object? rowStatus = null,
+    Object? colStatus = null,
+    Object? notes = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            value: null == value
+                ? _value.value
+                : value // ignore: cast_nullable_to_non_nullable
+                      as int,
+            row: null == row
+                ? _value.row
+                : row // ignore: cast_nullable_to_non_nullable
+                      as int,
+            col: null == col
+                ? _value.col
+                : col // ignore: cast_nullable_to_non_nullable
+                      as int,
+            isFixed: null == isFixed
+                ? _value.isFixed
+                : isFixed // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            isSelected: null == isSelected
+                ? _value.isSelected
+                : isSelected // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            isHighlighted: null == isHighlighted
+                ? _value.isHighlighted
+                : isHighlighted // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            isError: null == isError
+                ? _value.isError
+                : isError // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            blockStatus: null == blockStatus
+                ? _value.blockStatus
+                : blockStatus // ignore: cast_nullable_to_non_nullable
+                      as CellStatus,
+            rowStatus: null == rowStatus
+                ? _value.rowStatus
+                : rowStatus // ignore: cast_nullable_to_non_nullable
+                      as CellStatus,
+            colStatus: null == colStatus
+                ? _value.colStatus
+                : colStatus // ignore: cast_nullable_to_non_nullable
+                      as CellStatus,
+            notes: null == notes
+                ? _value.notes
+                : notes // ignore: cast_nullable_to_non_nullable
+                      as Set<int>,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$CellImplCopyWith<$Res> implements $CellCopyWith<$Res> {
+  factory _$$CellImplCopyWith(
+    _$CellImpl value,
+    $Res Function(_$CellImpl) then,
+  ) = __$$CellImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    int value,
+    int row,
+    int col,
+    bool isFixed,
+    bool isSelected,
+    bool isHighlighted,
+    bool isError,
+    CellStatus blockStatus,
+    CellStatus rowStatus,
+    CellStatus colStatus,
+    Set<int> notes,
+  });
+}
+
+/// @nodoc
+class __$$CellImplCopyWithImpl<$Res>
+    extends _$CellCopyWithImpl<$Res, _$CellImpl>
+    implements _$$CellImplCopyWith<$Res> {
+  __$$CellImplCopyWithImpl(_$CellImpl _value, $Res Function(_$CellImpl) _then)
+    : super(_value, _then);
+
+  /// Create a copy of Cell
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? value = null,
+    Object? row = null,
+    Object? col = null,
+    Object? isFixed = null,
+    Object? isSelected = null,
+    Object? isHighlighted = null,
+    Object? isError = null,
+    Object? blockStatus = null,
+    Object? rowStatus = null,
+    Object? colStatus = null,
+    Object? notes = null,
+  }) {
+    return _then(
+      _$CellImpl(
+        value: null == value
+            ? _value.value
+            : value // ignore: cast_nullable_to_non_nullable
+                  as int,
+        row: null == row
+            ? _value.row
+            : row // ignore: cast_nullable_to_non_nullable
+                  as int,
+        col: null == col
+            ? _value.col
+            : col // ignore: cast_nullable_to_non_nullable
+                  as int,
+        isFixed: null == isFixed
+            ? _value.isFixed
+            : isFixed // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isSelected: null == isSelected
+            ? _value.isSelected
+            : isSelected // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isHighlighted: null == isHighlighted
+            ? _value.isHighlighted
+            : isHighlighted // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isError: null == isError
+            ? _value.isError
+            : isError // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        blockStatus: null == blockStatus
+            ? _value.blockStatus
+            : blockStatus // ignore: cast_nullable_to_non_nullable
+                  as CellStatus,
+        rowStatus: null == rowStatus
+            ? _value.rowStatus
+            : rowStatus // ignore: cast_nullable_to_non_nullable
+                  as CellStatus,
+        colStatus: null == colStatus
+            ? _value.colStatus
+            : colStatus // ignore: cast_nullable_to_non_nullable
+                  as CellStatus,
+        notes: null == notes
+            ? _value._notes
+            : notes // ignore: cast_nullable_to_non_nullable
+                  as Set<int>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$CellImpl implements _Cell {
+  const _$CellImpl({
+    required this.value,
+    required this.row,
+    required this.col,
+    this.isFixed = false,
+    this.isSelected = false,
+    this.isHighlighted = false,
+    this.isError = false,
+    this.blockStatus = CellStatus.normal,
+    this.rowStatus = CellStatus.normal,
+    this.colStatus = CellStatus.normal,
+    final Set<int> notes = const {},
+  }) : _notes = notes;
+
+  factory _$CellImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CellImplFromJson(json);
+
+  @override
+  final int value;
+  @override
+  final int row;
+  @override
+  final int col;
+  @override
+  @JsonKey()
+  final bool isFixed;
+  @override
+  @JsonKey()
+  final bool isSelected;
+  @override
+  @JsonKey()
+  final bool isHighlighted;
+  @override
+  @JsonKey()
+  final bool isError;
+  @override
+  @JsonKey()
+  final CellStatus blockStatus;
+  @override
+  @JsonKey()
+  final CellStatus rowStatus;
+  @override
+  @JsonKey()
+  final CellStatus colStatus;
+  final Set<int> _notes;
+  @override
+  @JsonKey()
+  Set<int> get notes {
+    if (_notes is EqualUnmodifiableSetView) return _notes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_notes);
+  }
+
+  @override
+  String toString() {
+    return 'Cell(value: $value, row: $row, col: $col, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isError: $isError, blockStatus: $blockStatus, rowStatus: $rowStatus, colStatus: $colStatus, notes: $notes)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CellImpl &&
+            (identical(other.value, value) || other.value == value) &&
+            (identical(other.row, row) || other.row == row) &&
+            (identical(other.col, col) || other.col == col) &&
+            (identical(other.isFixed, isFixed) || other.isFixed == isFixed) &&
+            (identical(other.isSelected, isSelected) ||
+                other.isSelected == isSelected) &&
+            (identical(other.isHighlighted, isHighlighted) ||
+                other.isHighlighted == isHighlighted) &&
+            (identical(other.isError, isError) || other.isError == isError) &&
+            (identical(other.blockStatus, blockStatus) ||
+                other.blockStatus == blockStatus) &&
+            (identical(other.rowStatus, rowStatus) ||
+                other.rowStatus == rowStatus) &&
+            (identical(other.colStatus, colStatus) ||
+                other.colStatus == colStatus) &&
+            const DeepCollectionEquality().equals(other._notes, _notes));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    value,
+    row,
+    col,
+    isFixed,
+    isSelected,
+    isHighlighted,
+    isError,
+    blockStatus,
+    rowStatus,
+    colStatus,
+    const DeepCollectionEquality().hash(_notes),
+  );
+
+  /// Create a copy of Cell
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CellImplCopyWith<_$CellImpl> get copyWith =>
+      __$$CellImplCopyWithImpl<_$CellImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CellImplToJson(this);
+  }
+}
+
+abstract class _Cell implements Cell {
+  const factory _Cell({
+    required final int value,
+    required final int row,
+    required final int col,
+    final bool isFixed,
+    final bool isSelected,
+    final bool isHighlighted,
+    final bool isError,
+    final CellStatus blockStatus,
+    final CellStatus rowStatus,
+    final CellStatus colStatus,
+    final Set<int> notes,
+  }) = _$CellImpl;
+
+  factory _Cell.fromJson(Map<String, dynamic> json) = _$CellImpl.fromJson;
+
+  @override
+  int get value;
+  @override
+  int get row;
+  @override
+  int get col;
+  @override
+  bool get isFixed;
+  @override
+  bool get isSelected;
+  @override
+  bool get isHighlighted;
+  @override
+  bool get isError;
+  @override
+  CellStatus get blockStatus;
+  @override
+  CellStatus get rowStatus;
+  @override
+  CellStatus get colStatus;
+  @override
+  Set<int> get notes;
+
+  /// Create a copy of Cell
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CellImplCopyWith<_$CellImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

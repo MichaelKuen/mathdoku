@@ -1,0 +1,235 @@
+import 'dart:async';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../domain/models/game_state.dart';
+import '../../domain/models/cell.dart';
+import '../../domain/repositories/puzzle_repository.dart';
+import '../../data/repositories/puzzle_repository_impl.dart';
+import '../../domain/logic/sudoku_engine.dart';
+import '../../domain/logic/sudoku_generator.dart';
+
+part 'game_provider.g.dart';
+
+@riverpod
+PuzzleRepository puzzleRepository(PuzzleRepositoryRef ref) {
+  return PuzzleRepositoryImpl();
+}
+
+@Riverpod(keepAlive: true)
+class GameNotifier extends _$GameNotifier {
+  final _engine = SudokuEngine();
+  final _generator = SudokuGenerator();
+  Timer? _timer;
+
+  @override
+  GameState build() {
+    ref.onDispose(() => _timer?.cancel());
+    return const GameState();
+  }
+
+  Future<void> startGame(Difficulty difficulty) async {
+    state = state.copyWith(status: GameStatus.loading, difficulty: difficulty);
+    
+    // Use Generator instead of Repository for infinite puzzles
+    final board = _generator.generate(difficulty);
+    
+    state = state.copyWith(
+      board: board,
+      status: GameStatus.playing,
+      elapsedSeconds: 0,
+      mistakes: 0,
+      hintsRemaining: 3,
+      selectedRow: null,
+      selectedCol: null,
+    );
+    
+    _startTimer();
+    _updateGroupStatuses();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.status == GameStatus.playing) {
+        state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      }
+    });
+  }
+
+  void selectCell(int row, int col) {
+    if (state.status != GameStatus.playing) return;
+    state = state.copyWith(selectedRow: row, selectedCol: col);
+    _highlightCells(row, col);
+  }
+
+  void _highlightCells(int row, int col) {
+    if (state.board == null) return;
+    
+    final newCells = state.board!.cells.map((r) {
+      return r.map((cell) {
+        final isSelected = cell.row == row && cell.col == col;
+        final isHighlighted = cell.row == row || 
+                             cell.col == col || 
+                             (cell.row ~/ 3 == row ~/ 3 && cell.col ~/ 3 == col ~/ 3);
+        return cell.copyWith(isSelected: isSelected, isHighlighted: isHighlighted);
+      }).toList();
+    }).toList();
+    
+    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+  }
+
+  void inputNumber(int number) {
+    if (state.status != GameStatus.playing || 
+        state.selectedRow == null || 
+        state.selectedCol == null) return;
+
+    final row = state.selectedRow!;
+    final col = state.selectedCol!;
+    final cell = state.board!.getCell(row, col);
+
+    if (cell.isFixed || cell.value == number) return;
+
+    final correctValue = state.board!.getSolutionValue(row, col);
+    final isCorrect = number == correctValue;
+    
+    if (!isCorrect) {
+      state = state.copyWith(mistakes: state.mistakes + 1);
+    }
+
+    final newCells = state.board!.cells.map((r) {
+      return r.map((c) {
+        if (c.row == row && c.col == col) {
+          return c.copyWith(value: number, isError: !isCorrect);
+        }
+        return c;
+      }).toList();
+    }).toList();
+
+    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+    _updateGroupStatuses();
+
+    if (state.board!.isComplete) {
+      state = state.copyWith(status: GameStatus.won);
+      _timer?.cancel();
+    }
+  }
+
+  void eraseCell() {
+    if (state.status != GameStatus.playing || 
+        state.selectedRow == null || 
+        state.selectedCol == null) return;
+
+    final row = state.selectedRow!;
+    final col = state.selectedCol!;
+    final cell = state.board!.getCell(row, col);
+
+    if (cell.isFixed || cell.value == 0) return;
+
+    final newCells = state.board!.cells.map((r) {
+      return r.map((c) {
+        if (c.row == row && c.col == col) {
+          return c.copyWith(value: 0, isError: false);
+        }
+        return c;
+      }).toList();
+    }).toList();
+
+    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+    _updateGroupStatuses();
+  }
+
+  void useHint() {
+    if (state.status != GameStatus.playing || 
+        state.selectedRow == null || 
+        state.selectedCol == null ||
+        state.hintsRemaining <= 0) return;
+
+    final row = state.selectedRow!;
+    final col = state.selectedCol!;
+    final cell = state.board!.getCell(row, col);
+
+    if (cell.isFixed) return;
+
+    final correctValue = state.board!.getSolutionValue(row, col);
+
+    final newCells = state.board!.cells.map((r) {
+      return r.map((c) {
+        if (c.row == row && c.col == col) {
+          return c.copyWith(
+            value: correctValue, 
+            isError: false,
+            isFixed: true, 
+          );
+        }
+        return c;
+      }).toList();
+    }).toList();
+
+    state = state.copyWith(
+      board: state.board!.copyWith(cells: newCells),
+      hintsRemaining: state.hintsRemaining - 1,
+    );
+    
+    _updateGroupStatuses();
+
+    if (state.board!.isComplete) {
+      state = state.copyWith(status: GameStatus.won);
+      _timer?.cancel();
+    }
+  }
+
+  void _updateGroupStatuses() {
+    if (state.board == null) return;
+    
+    final board = state.board!;
+    List<List<Cell>> newCells = board.cells.map((r) => r.toList()).toList();
+
+    final isEasy = state.difficulty == Difficulty.easy;
+
+    for (int rowBlock = 0; rowBlock < 3; rowBlock++) {
+      for (int colBlock = 0; colBlock < 3; colBlock++) {
+        final block = _engine.getBlock(board, rowBlock, colBlock);
+        final status = _engine.checkGroupStatus(block);
+        final cellStatus = _toCellStatus(status);
+
+        for (int r = 0; r < 3; r++) {
+          for (int c = 0; c < 3; c++) {
+            int tr = rowBlock * 3 + r;
+            int tc = colBlock * 3 + c;
+            newCells[tr][tc] = newCells[tr][tc].copyWith(blockStatus: cellStatus);
+          }
+        }
+      }
+    }
+
+    if (isEasy) {
+      for (int r = 0; r < 9; r++) {
+        final row = board.cells[r];
+        final status = _engine.checkGroupStatus(row);
+        final cellStatus = _toCellStatus(status);
+        for (int c = 0; c < 9; c++) {
+          newCells[r][c] = newCells[r][c].copyWith(rowStatus: cellStatus);
+        }
+      }
+
+      for (int c = 0; c < 9; c++) {
+        List<Cell> column = [];
+        for (int r = 0; r < 9; r++) {
+          column.add(board.cells[r][c]);
+        }
+        final status = _engine.checkGroupStatus(column);
+        final cellStatus = _toCellStatus(status);
+        for (int r = 0; r < 9; r++) {
+          newCells[r][c] = newCells[r][c].copyWith(colStatus: cellStatus);
+        }
+      }
+    }
+
+    state = state.copyWith(board: board.copyWith(cells: newCells));
+  }
+
+  CellStatus _toCellStatus(GroupStatus status) {
+    if (status == GroupStatus.correct) return CellStatus.correct;
+    if (status == GroupStatus.incorrect) return CellStatus.incorrect;
+    return CellStatus.normal;
+  }
+}
