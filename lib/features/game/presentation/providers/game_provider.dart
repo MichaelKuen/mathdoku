@@ -228,8 +228,12 @@ class GameNotifier extends _$GameNotifier {
   }
 
   CellStatus _toCellStatus(GroupStatus status) {
-    if (status == GroupStatus.correct) return CellStatus.correct;
-    if (status == GroupStatus.incorrect) return CellStatus.incorrect;
+    if (status == GroupStatus.correct) {
+      return CellStatus.correct;
+    }
+    if (status == GroupStatus.incorrect) {
+      return CellStatus.incorrect;
+    }
     return CellStatus.normal;
   }
 }

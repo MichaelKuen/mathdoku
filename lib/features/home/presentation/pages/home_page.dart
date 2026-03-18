@@ -3,13 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sudoku/features/game/domain/models/game_state.dart';
 import 'package:sudoku/features/game/presentation/providers/game_provider.dart';
 import 'package:sudoku/features/game/presentation/pages/game_page.dart';
+import 'package:sudoku/core/providers/theme_provider.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeNotifierProvider);
+
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: Icon(themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
