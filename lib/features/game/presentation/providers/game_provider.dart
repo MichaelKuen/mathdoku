@@ -29,7 +29,6 @@ class GameNotifier extends _$GameNotifier {
   Future<void> startGame(Difficulty difficulty) async {
     state = state.copyWith(status: GameStatus.loading, difficulty: difficulty);
     
-    // Use Generator instead of Repository for infinite puzzles
     final board = _generator.generate(difficulty);
     
     state = state.copyWith(
@@ -38,6 +37,7 @@ class GameNotifier extends _$GameNotifier {
       elapsedSeconds: 0,
       mistakes: 0,
       hintsRemaining: 3,
+      isPencilMode: false,
       selectedRow: null,
       selectedCol: null,
     );
@@ -55,6 +55,10 @@ class GameNotifier extends _$GameNotifier {
     });
   }
 
+  void togglePencilMode() {
+    state = state.copyWith(isPencilMode: !state.isPencilMode);
+  }
+
   void selectCell(int row, int col) {
     if (state.status != GameStatus.playing) return;
     state = state.copyWith(selectedRow: row, selectedCol: col);
@@ -64,13 +68,24 @@ class GameNotifier extends _$GameNotifier {
   void _highlightCells(int row, int col) {
     if (state.board == null) return;
     
-    final newCells = state.board!.cells.map((r) {
-      return r.map((cell) {
+    final selectedCell = state.board!.getCell(row, col);
+    final selectedValue = selectedCell.value;
+    
+    final newCells = state.board!.cells.map<List<Cell>>((r) {
+      return r.map<Cell>((cell) {
         final isSelected = cell.row == row && cell.col == col;
         final isHighlighted = cell.row == row || 
                              cell.col == col || 
                              (cell.row ~/ 3 == row ~/ 3 && cell.col ~/ 3 == col ~/ 3);
-        return cell.copyWith(isSelected: isSelected, isHighlighted: isHighlighted);
+        
+        // Number Scoping: Highlight other cells with same number
+        final isSameNumber = selectedValue != 0 && cell.value == selectedValue;
+        
+        return cell.copyWith(
+          isSelected: isSelected, 
+          isHighlighted: isHighlighted,
+          isSameNumber: isSameNumber,
+        );
       }).toList();
     }).toList();
     
@@ -88,30 +103,55 @@ class GameNotifier extends _$GameNotifier {
     final col = state.selectedCol!;
     final cell = state.board!.getCell(row, col);
 
-    if (cell.isFixed || cell.value == number) return;
+    if (cell.isFixed) return;
 
-    final correctValue = state.board!.getSolutionValue(row, col);
-    final isCorrect = number == correctValue;
-    
-    if (!isCorrect) {
-      state = state.copyWith(mistakes: state.mistakes + 1);
-    }
+    if (state.isPencilMode) {
+      if (cell.value != 0) return; // Can't add notes to a filled cell
+      
+      final newNotes = Set<int>.from(cell.notes);
+      if (newNotes.contains(number)) {
+        newNotes.remove(number);
+      } else {
+        newNotes.add(number);
+      }
 
-    final newCells = state.board!.cells.map((r) {
-      return r.map((c) {
-        if (c.row == row && c.col == col) {
-          return c.copyWith(value: number, isError: !isCorrect);
-        }
-        return c;
+      final newCells = state.board!.cells.map<List<Cell>>((r) {
+        return r.map<Cell>((c) {
+          if (c.row == row && c.col == col) {
+            return c.copyWith(notes: newNotes);
+          }
+          return c;
+        }).toList();
       }).toList();
-    }).toList();
 
-    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
-    _updateGroupStatuses();
+      state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+    } else {
+      if (cell.value == number) return;
 
-    if (state.board!.isComplete) {
-      state = state.copyWith(status: GameStatus.won);
-      _timer?.cancel();
+      final correctValue = state.board!.getSolutionValue(row, col);
+      final isCorrect = number == correctValue;
+      
+      if (!isCorrect) {
+        state = state.copyWith(mistakes: state.mistakes + 1);
+      }
+
+      final newCells = state.board!.cells.map<List<Cell>>((r) {
+        return r.map<Cell>((c) {
+          if (c.row == row && c.col == col) {
+            return c.copyWith(value: number, isError: !isCorrect, notes: {});
+          }
+          return c;
+        }).toList();
+      }).toList();
+
+      state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+      _updateGroupStatuses();
+      _highlightCells(row, col); // Refresh highlighting for number scoping
+
+      if (state.board!.isComplete) {
+        state = state.copyWith(status: GameStatus.won);
+        _timer?.cancel();
+      }
     }
   }
 
@@ -126,12 +166,12 @@ class GameNotifier extends _$GameNotifier {
     final col = state.selectedCol!;
     final cell = state.board!.getCell(row, col);
 
-    if (cell.isFixed || cell.value == 0) return;
+    if (cell.isFixed) return;
 
-    final newCells = state.board!.cells.map((r) {
-      return r.map((c) {
+    final newCells = state.board!.cells.map<List<Cell>>((r) {
+      return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
-          return c.copyWith(value: 0, isError: false);
+          return c.copyWith(value: 0, isError: false, notes: {});
         }
         return c;
       }).toList();
@@ -139,6 +179,7 @@ class GameNotifier extends _$GameNotifier {
 
     state = state.copyWith(board: state.board!.copyWith(cells: newCells));
     _updateGroupStatuses();
+    _highlightCells(row, col);
   }
 
   void useHint() {
@@ -157,13 +198,14 @@ class GameNotifier extends _$GameNotifier {
 
     final correctValue = state.board!.getSolutionValue(row, col);
 
-    final newCells = state.board!.cells.map((r) {
-      return r.map((c) {
+    final newCells = state.board!.cells.map<List<Cell>>((r) {
+      return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
           return c.copyWith(
             value: correctValue, 
             isError: false,
             isFixed: true, 
+            notes: {},
           );
         }
         return c;
@@ -176,6 +218,7 @@ class GameNotifier extends _$GameNotifier {
     );
     
     _updateGroupStatuses();
+    _highlightCells(row, col);
 
     if (state.board!.isComplete) {
       state = state.copyWith(status: GameStatus.won);

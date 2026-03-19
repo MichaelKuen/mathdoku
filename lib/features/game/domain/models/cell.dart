@@ -14,6 +14,7 @@ class Cell with _$Cell {
     @Default(false) bool isFixed,
     @Default(false) bool isSelected,
     @Default(false) bool isHighlighted,
+    @Default(false) bool isSameNumber,
     @Default(false) bool isError,
     @Default(CellStatus.normal) CellStatus blockStatus,
     @Default(CellStatus.normal) CellStatus rowStatus,

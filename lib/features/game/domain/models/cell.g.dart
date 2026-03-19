@@ -13,6 +13,7 @@ _$CellImpl _$$CellImplFromJson(Map<String, dynamic> json) => _$CellImpl(
   isFixed: json['isFixed'] as bool? ?? false,
   isSelected: json['isSelected'] as bool? ?? false,
   isHighlighted: json['isHighlighted'] as bool? ?? false,
+  isSameNumber: json['isSameNumber'] as bool? ?? false,
   isError: json['isError'] as bool? ?? false,
   blockStatus:
       $enumDecodeNullable(_$CellStatusEnumMap, json['blockStatus']) ??
@@ -38,6 +39,7 @@ Map<String, dynamic> _$$CellImplToJson(_$CellImpl instance) =>
       'isFixed': instance.isFixed,
       'isSelected': instance.isSelected,
       'isHighlighted': instance.isHighlighted,
+      'isSameNumber': instance.isSameNumber,
       'isError': instance.isError,
       'blockStatus': _$CellStatusEnumMap[instance.blockStatus]!,
       'rowStatus': _$CellStatusEnumMap[instance.rowStatus]!,

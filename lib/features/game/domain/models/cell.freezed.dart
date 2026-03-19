@@ -27,6 +27,7 @@ mixin _$Cell {
   bool get isFixed => throw _privateConstructorUsedError;
   bool get isSelected => throw _privateConstructorUsedError;
   bool get isHighlighted => throw _privateConstructorUsedError;
+  bool get isSameNumber => throw _privateConstructorUsedError;
   bool get isError => throw _privateConstructorUsedError;
   CellStatus get blockStatus => throw _privateConstructorUsedError;
   CellStatus get rowStatus => throw _privateConstructorUsedError;
@@ -54,6 +55,7 @@ abstract class $CellCopyWith<$Res> {
     bool isFixed,
     bool isSelected,
     bool isHighlighted,
+    bool isSameNumber,
     bool isError,
     CellStatus blockStatus,
     CellStatus rowStatus,
@@ -83,6 +85,7 @@ class _$CellCopyWithImpl<$Res, $Val extends Cell>
     Object? isFixed = null,
     Object? isSelected = null,
     Object? isHighlighted = null,
+    Object? isSameNumber = null,
     Object? isError = null,
     Object? blockStatus = null,
     Object? rowStatus = null,
@@ -114,6 +117,10 @@ class _$CellCopyWithImpl<$Res, $Val extends Cell>
             isHighlighted: null == isHighlighted
                 ? _value.isHighlighted
                 : isHighlighted // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            isSameNumber: null == isSameNumber
+                ? _value.isSameNumber
+                : isSameNumber // ignore: cast_nullable_to_non_nullable
                       as bool,
             isError: null == isError
                 ? _value.isError
@@ -156,6 +163,7 @@ abstract class _$$CellImplCopyWith<$Res> implements $CellCopyWith<$Res> {
     bool isFixed,
     bool isSelected,
     bool isHighlighted,
+    bool isSameNumber,
     bool isError,
     CellStatus blockStatus,
     CellStatus rowStatus,
@@ -182,6 +190,7 @@ class __$$CellImplCopyWithImpl<$Res>
     Object? isFixed = null,
     Object? isSelected = null,
     Object? isHighlighted = null,
+    Object? isSameNumber = null,
     Object? isError = null,
     Object? blockStatus = null,
     Object? rowStatus = null,
@@ -213,6 +222,10 @@ class __$$CellImplCopyWithImpl<$Res>
         isHighlighted: null == isHighlighted
             ? _value.isHighlighted
             : isHighlighted // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isSameNumber: null == isSameNumber
+            ? _value.isSameNumber
+            : isSameNumber // ignore: cast_nullable_to_non_nullable
                   as bool,
         isError: null == isError
             ? _value.isError
@@ -249,6 +262,7 @@ class _$CellImpl implements _Cell {
     this.isFixed = false,
     this.isSelected = false,
     this.isHighlighted = false,
+    this.isSameNumber = false,
     this.isError = false,
     this.blockStatus = CellStatus.normal,
     this.rowStatus = CellStatus.normal,
@@ -276,6 +290,9 @@ class _$CellImpl implements _Cell {
   final bool isHighlighted;
   @override
   @JsonKey()
+  final bool isSameNumber;
+  @override
+  @JsonKey()
   final bool isError;
   @override
   @JsonKey()
@@ -297,7 +314,7 @@ class _$CellImpl implements _Cell {
 
   @override
   String toString() {
-    return 'Cell(value: $value, row: $row, col: $col, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isError: $isError, blockStatus: $blockStatus, rowStatus: $rowStatus, colStatus: $colStatus, notes: $notes)';
+    return 'Cell(value: $value, row: $row, col: $col, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isSameNumber: $isSameNumber, isError: $isError, blockStatus: $blockStatus, rowStatus: $rowStatus, colStatus: $colStatus, notes: $notes)';
   }
 
   @override
@@ -313,6 +330,8 @@ class _$CellImpl implements _Cell {
                 other.isSelected == isSelected) &&
             (identical(other.isHighlighted, isHighlighted) ||
                 other.isHighlighted == isHighlighted) &&
+            (identical(other.isSameNumber, isSameNumber) ||
+                other.isSameNumber == isSameNumber) &&
             (identical(other.isError, isError) || other.isError == isError) &&
             (identical(other.blockStatus, blockStatus) ||
                 other.blockStatus == blockStatus) &&
@@ -333,6 +352,7 @@ class _$CellImpl implements _Cell {
     isFixed,
     isSelected,
     isHighlighted,
+    isSameNumber,
     isError,
     blockStatus,
     rowStatus,
@@ -362,6 +382,7 @@ abstract class _Cell implements Cell {
     final bool isFixed,
     final bool isSelected,
     final bool isHighlighted,
+    final bool isSameNumber,
     final bool isError,
     final CellStatus blockStatus,
     final CellStatus rowStatus,
@@ -383,6 +404,8 @@ abstract class _Cell implements Cell {
   bool get isSelected;
   @override
   bool get isHighlighted;
+  @override
+  bool get isSameNumber;
   @override
   bool get isError;
   @override

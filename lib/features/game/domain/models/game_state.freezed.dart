@@ -24,6 +24,7 @@ mixin _$GameState {
   int get mistakes => throw _privateConstructorUsedError;
   int get maxMistakes => throw _privateConstructorUsedError;
   int get hintsRemaining => throw _privateConstructorUsedError;
+  bool get isPencilMode => throw _privateConstructorUsedError;
   int? get selectedRow => throw _privateConstructorUsedError;
   int? get selectedCol => throw _privateConstructorUsedError;
 
@@ -47,6 +48,7 @@ abstract class $GameStateCopyWith<$Res> {
     int mistakes,
     int maxMistakes,
     int hintsRemaining,
+    bool isPencilMode,
     int? selectedRow,
     int? selectedCol,
   });
@@ -76,6 +78,7 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
     Object? mistakes = null,
     Object? maxMistakes = null,
     Object? hintsRemaining = null,
+    Object? isPencilMode = null,
     Object? selectedRow = freezed,
     Object? selectedCol = freezed,
   }) {
@@ -109,6 +112,10 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
                 ? _value.hintsRemaining
                 : hintsRemaining // ignore: cast_nullable_to_non_nullable
                       as int,
+            isPencilMode: null == isPencilMode
+                ? _value.isPencilMode
+                : isPencilMode // ignore: cast_nullable_to_non_nullable
+                      as bool,
             selectedRow: freezed == selectedRow
                 ? _value.selectedRow
                 : selectedRow // ignore: cast_nullable_to_non_nullable
@@ -154,6 +161,7 @@ abstract class _$$GameStateImplCopyWith<$Res>
     int mistakes,
     int maxMistakes,
     int hintsRemaining,
+    bool isPencilMode,
     int? selectedRow,
     int? selectedCol,
   });
@@ -183,6 +191,7 @@ class __$$GameStateImplCopyWithImpl<$Res>
     Object? mistakes = null,
     Object? maxMistakes = null,
     Object? hintsRemaining = null,
+    Object? isPencilMode = null,
     Object? selectedRow = freezed,
     Object? selectedCol = freezed,
   }) {
@@ -216,6 +225,10 @@ class __$$GameStateImplCopyWithImpl<$Res>
             ? _value.hintsRemaining
             : hintsRemaining // ignore: cast_nullable_to_non_nullable
                   as int,
+        isPencilMode: null == isPencilMode
+            ? _value.isPencilMode
+            : isPencilMode // ignore: cast_nullable_to_non_nullable
+                  as bool,
         selectedRow: freezed == selectedRow
             ? _value.selectedRow
             : selectedRow // ignore: cast_nullable_to_non_nullable
@@ -240,6 +253,7 @@ class _$GameStateImpl implements _GameState {
     this.mistakes = 0,
     this.maxMistakes = 3,
     this.hintsRemaining = 3,
+    this.isPencilMode = false,
     this.selectedRow,
     this.selectedCol,
   });
@@ -265,13 +279,16 @@ class _$GameStateImpl implements _GameState {
   @JsonKey()
   final int hintsRemaining;
   @override
+  @JsonKey()
+  final bool isPencilMode;
+  @override
   final int? selectedRow;
   @override
   final int? selectedCol;
 
   @override
   String toString() {
-    return 'GameState(board: $board, status: $status, difficulty: $difficulty, elapsedSeconds: $elapsedSeconds, mistakes: $mistakes, maxMistakes: $maxMistakes, hintsRemaining: $hintsRemaining, selectedRow: $selectedRow, selectedCol: $selectedCol)';
+    return 'GameState(board: $board, status: $status, difficulty: $difficulty, elapsedSeconds: $elapsedSeconds, mistakes: $mistakes, maxMistakes: $maxMistakes, hintsRemaining: $hintsRemaining, isPencilMode: $isPencilMode, selectedRow: $selectedRow, selectedCol: $selectedCol)';
   }
 
   @override
@@ -291,6 +308,8 @@ class _$GameStateImpl implements _GameState {
                 other.maxMistakes == maxMistakes) &&
             (identical(other.hintsRemaining, hintsRemaining) ||
                 other.hintsRemaining == hintsRemaining) &&
+            (identical(other.isPencilMode, isPencilMode) ||
+                other.isPencilMode == isPencilMode) &&
             (identical(other.selectedRow, selectedRow) ||
                 other.selectedRow == selectedRow) &&
             (identical(other.selectedCol, selectedCol) ||
@@ -307,6 +326,7 @@ class _$GameStateImpl implements _GameState {
     mistakes,
     maxMistakes,
     hintsRemaining,
+    isPencilMode,
     selectedRow,
     selectedCol,
   );
@@ -329,6 +349,7 @@ abstract class _GameState implements GameState {
     final int mistakes,
     final int maxMistakes,
     final int hintsRemaining,
+    final bool isPencilMode,
     final int? selectedRow,
     final int? selectedCol,
   }) = _$GameStateImpl;
@@ -347,6 +368,8 @@ abstract class _GameState implements GameState {
   int get maxMistakes;
   @override
   int get hintsRemaining;
+  @override
+  bool get isPencilMode;
   @override
   int? get selectedRow;
   @override

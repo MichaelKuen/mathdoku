@@ -49,6 +49,8 @@ class _GamePageState extends ConsumerState<GamePage> {
         _moveSelection(0, 1);
       } else if (event.logicalKey == LogicalKeyboardKey.keyH) {
         ref.read(gameNotifierProvider.notifier).useHint();
+      } else if (event.logicalKey == LogicalKeyboardKey.keyN) {
+        ref.read(gameNotifierProvider.notifier).togglePencilMode();
       }
     }
   }
@@ -99,6 +101,15 @@ class _GamePageState extends ConsumerState<GamePage> {
       appBar: AppBar(
         title: Text(gameState.difficulty.name.toUpperCase()),
         actions: [
+          IconButton(
+            icon: Icon(
+              gameState.isPencilMode ? Icons.edit : Icons.edit_outlined, 
+              color: gameState.isPencilMode ? Colors.blue : null,
+              size: 22,
+            ),
+            onPressed: () => ref.read(gameNotifierProvider.notifier).togglePencilMode(),
+            tooltip: 'Pencil Mode (N)',
+          ),
           IconButton(
             icon: Icon(themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode, size: 22),
             onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
@@ -348,6 +359,9 @@ class _NumberPad extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final gameState = ref.watch(gameNotifierProvider);
+    final board = gameState.board;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -360,23 +374,52 @@ class _NumberPad extends ConsumerWidget {
       itemCount: 9,
       itemBuilder: (context, index) {
         final number = index + 1;
+        
+        // Smart Number Pad: Check if all 9 instances are correctly placed
+        bool isComplete = false;
+        if (board != null) {
+          int count = 0;
+          for (int r = 0; r < 9; r++) {
+            for (int c = 0; c < 9; c++) {
+              final cell = board.getCell(r, c);
+              if (cell.value == number && !cell.isError) {
+                count++;
+              }
+            }
+          }
+          isComplete = count >= 9;
+        }
+
         return InkWell(
-          onTap: () => ref.read(gameNotifierProvider.notifier).inputNumber(number),
+          onTap: isComplete ? null : () => ref.read(gameNotifierProvider.notifier).inputNumber(number),
           borderRadius: BorderRadius.circular(8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.05),
-              border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                '$number',
-                style: TextStyle(
-                  fontSize: isCompact ? 18 : 22,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
+          child: Opacity(
+            opacity: isComplete ? 0.3 : 1.0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.05),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Text(
+                      '$number',
+                      style: TextStyle(
+                        fontSize: isCompact ? 18 : 22,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (isComplete)
+                    const Positioned(
+                      top: 2,
+                      right: 2,
+                      child: Icon(Icons.check_circle, size: 12, color: Colors.green),
+                    ),
+                ],
               ),
             ),
           ),

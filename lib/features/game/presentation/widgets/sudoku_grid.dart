@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import '../providers/game_provider.dart';
 import '../../domain/models/cell.dart';
 
@@ -62,6 +63,9 @@ class _SudokuCell extends ConsumerWidget {
       backgroundColor = Colors.orange.withValues(alpha: 0.2);
     } else if (cell.isSelected) {
       backgroundColor = Colors.blue.withValues(alpha: 0.5);
+    } else if (cell.isSameNumber) {
+      // Number Scoping: Distinct secondary highlight
+      backgroundColor = Colors.blue.withValues(alpha: 0.3);
     } else if (cell.isHighlighted) {
       backgroundColor = Colors.blue.withValues(alpha: 0.1);
     }
@@ -69,16 +73,47 @@ class _SudokuCell extends ConsumerWidget {
     BorderSide thin = const BorderSide(color: Colors.grey, width: 0.5);
     BorderSide thick = const BorderSide(color: Colors.black, width: 2.0);
 
-    Widget cellContent = Center(
-      child: Text(
-        cell.value == 0 ? '' : '${cell.value}',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: cell.isFixed ? FontWeight.bold : FontWeight.normal,
-          color: cell.isError ? Colors.red : (cell.isFixed ? Colors.black : Colors.blue),
+    Widget cellContent;
+    
+    if (cell.value != 0) {
+      cellContent = Center(
+        child: Text(
+          '${cell.value}',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: cell.isFixed ? FontWeight.bold : FontWeight.normal,
+            color: cell.isError ? Colors.red : (cell.isFixed ? Colors.black : Colors.blue),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // Pencil/Notes Mode: 3x3 mini-grid for candidates
+      cellContent = Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 1,
+          ),
+          itemCount: 9,
+          itemBuilder: (context, index) {
+            final noteValue = index + 1;
+            final hasNote = cell.notes.contains(noteValue);
+            return Center(
+              child: Text(
+                hasNote ? '$noteValue' : '',
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey,
+                  height: 1,
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
 
     // Apply animations
     if (cell.isSelected) {
@@ -99,7 +134,10 @@ class _SudokuCell extends ConsumerWidget {
     }
 
     return GestureDetector(
-      onTap: () => ref.read(gameNotifierProvider.notifier).selectCell(cell.row, cell.col),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        ref.read(gameNotifierProvider.notifier).selectCell(cell.row, cell.col);
+      },
       child: Container(
         decoration: BoxDecoration(
           color: backgroundColor,

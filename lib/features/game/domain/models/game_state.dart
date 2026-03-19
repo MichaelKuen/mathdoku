@@ -16,6 +16,7 @@ class GameState with _$GameState {
     @Default(0) int mistakes,
     @Default(3) int maxMistakes,
     @Default(3) int hintsRemaining,
+    @Default(false) bool isPencilMode,
     int? selectedRow,
     int? selectedCol,
   }) = _GameState;
