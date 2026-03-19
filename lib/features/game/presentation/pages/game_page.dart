@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/game_provider.dart';
 import '../widgets/sudoku_grid.dart';
 import '../../domain/models/game_state.dart';
+import 'package:sudoku/core/providers/theme_provider.dart';
 
 class GamePage extends ConsumerStatefulWidget {
   const GamePage({super.key});
@@ -75,18 +76,40 @@ class _GamePageState extends ConsumerState<GamePage> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameNotifierProvider);
+    final themeMode = ref.watch(themeNotifierProvider);
 
     ref.listen(gameNotifierProvider.select((s) => s.status), (previous, next) {
       if (next == GameStatus.won) _showWinDialog(context, ref, gameState);
     });
 
+    final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('${gameState.difficulty.name.toUpperCase()} SUDOKU'),
+        title: Text(gameState.difficulty.name.toUpperCase()),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode, size: 22),
+            onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
+            tooltip: 'Toggle Theme',
+          ),
+          IconButton(
+            icon: const Icon(Icons.lightbulb_outline, color: Colors.amber, size: 22),
+            onPressed: gameState.hintsRemaining > 0 
+                ? () => ref.read(gameNotifierProvider.notifier).useHint() 
+                : null,
+            tooltip: 'Hint (${gameState.hintsRemaining})',
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 22),
+            onPressed: () => ref.read(gameNotifierProvider.notifier).eraseCell(),
+            tooltip: 'Erase',
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 22),
             onPressed: () => _showRefreshConfirmation(context, ref, gameState),
+            tooltip: 'New Game',
           ),
         ],
       ),
@@ -96,71 +119,69 @@ class _GamePageState extends ConsumerState<GamePage> {
         onKeyEvent: _handleKeyEvent,
         child: gameState.status == GameStatus.loading
             ? const Center(child: CircularProgressIndicator())
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  bool isWide = constraints.maxWidth > 800;
+            : OrientationBuilder(
+                builder: (context, orientation) {
+                  bool isLandscape = orientation == Orientation.landscape;
 
-                  if (isWide) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(32.0),
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 600),
-                                child: const SudokuGrid(),
+                  if (isLandscape) {
+                    return SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 500),
+                                  child: const SudokuGrid(),
+                                ),
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _CompactStatsRow(gameState: gameState),
+                                  const SizedBox(height: 8),
+                                  const _NumberPad(isVertical: true, isCompact: true),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          width: 300,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            border: const Border(left: BorderSide(color: Colors.black12)),
-                          ),
-                          child: Column(
-                            children: [
-                              _GameHeader(gameState: gameState),
-                              const Divider(height: 40),
-                              const Text('CONTROLS', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                              const SizedBox(height: 20),
-                              const _NumberPad(isVertical: true),
-                              const Spacer(),
-                              _ActionButtons(hintsRemaining: gameState.hintsRemaining, isVertical: true),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     );
                   }
 
-                  return SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _GameHeader(gameState: gameState),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 500),
-                                child: const SudokuGrid(),
+                  return Column(
+                    children: [
+                      _StatsBar(gameState: gameState),
+                      Expanded(
+                        child: SafeArea(
+                          child: Column(
+                            children: [
+                              const Spacer(),
+                              Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 500),
+                                  child: const SudokuGrid(),
+                                ),
                               ),
-                            ),
+                              const Spacer(),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                child: _NumberPad(isVertical: false),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                          _ActionButtons(hintsRemaining: gameState.hintsRemaining, isVertical: false),
-                          const SizedBox(height: 15),
-                          const _NumberPad(isVertical: false),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   );
                 },
               ),
@@ -201,76 +222,29 @@ class _GamePageState extends ConsumerState<GamePage> {
   }
 }
 
-class _ActionButtons extends ConsumerWidget {
-  final int hintsRemaining;
-  final bool isVertical;
-  const _ActionButtons({required this.hintsRemaining, required this.isVertical});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final List<Widget> children = [
-      Expanded(
-        child: ElevatedButton.icon(
-          onPressed: () => ref.read(gameNotifierProvider.notifier).eraseCell(),
-          icon: const Icon(Icons.delete_outline),
-          label: const Text('Erase'),
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.red,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-          ),
-        ),
-      ),
-      if (!isVertical) const SizedBox(width: 16),
-      if (isVertical) const SizedBox(height: 16),
-      Expanded(
-        child: ElevatedButton.icon(
-          onPressed: hintsRemaining > 0 ? () => ref.read(gameNotifierProvider.notifier).useHint() : null,
-          icon: const Icon(Icons.lightbulb_outline),
-          label: Text('Hint ($hintsRemaining)'),
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.amber[800],
-            padding: const EdgeInsets.symmetric(vertical: 8),
-          ),
-        ),
-      ),
-    ];
-
-    if (isVertical) {
-      return Column(
-        children: children.map((w) {
-          if (w is Expanded) return SizedBox(width: double.infinity, child: w.child);
-          return w;
-        }).toList(),
-      );
-    }
-    
-    return Row(children: children);
-  }
-}
-
-class _GameHeader extends StatelessWidget {
+class _CompactStatsRow extends StatelessWidget {
   final GameState gameState;
-  const _GameHeader({required this.gameState});
+  const _CompactStatsRow({required this.gameState});
 
   @override
   Widget build(BuildContext context) {
     final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
-            const Text('MISTAKES', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            Text('${gameState.mistakes}/${gameState.maxMistakes}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.timer_outlined, size: 14, color: Colors.blue),
+            const SizedBox(width: 4),
+            Text('$minutes:$seconds', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
           ],
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        Row(
           children: [
-            const Text('TIME', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            Text('$minutes:$seconds', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.error_outline, size: 14, color: Colors.redAccent),
+            const SizedBox(width: 4),
+            Text('${gameState.mistakes}/${gameState.maxMistakes}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.redAccent)),
           ],
         ),
       ],
@@ -278,9 +252,51 @@ class _GameHeader extends StatelessWidget {
   }
 }
 
+class _StatsBar extends StatelessWidget {
+  final GameState gameState;
+  const _StatsBar({required this.gameState});
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.timer_outlined, size: 18, color: Colors.blue),
+              const SizedBox(width: 6),
+              Text(
+                '$minutes:$seconds',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              const Icon(Icons.error_outline, size: 18, color: Colors.redAccent),
+              const SizedBox(width: 6),
+              Text(
+                'Mistakes: ${gameState.mistakes}/${gameState.maxMistakes}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.redAccent),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NumberPad extends ConsumerWidget {
   final bool isVertical;
-  const _NumberPad({required this.isVertical});
+  final bool isCompact;
+  const _NumberPad({required this.isVertical, this.isCompact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -289,8 +305,9 @@ class _NumberPad extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: isVertical ? 3 : 9,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: isCompact ? 6 : 8,
+        mainAxisSpacing: isCompact ? 6 : 8,
+        childAspectRatio: isVertical ? 1.4 : 1.0,
       ),
       itemCount: 9,
       itemBuilder: (context, index) {
@@ -305,7 +322,14 @@ class _NumberPad extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
-              child: Text('$number', style: TextStyle(fontSize: isVertical ? 24 : 18, color: Colors.blue, fontWeight: FontWeight.bold)),
+              child: Text(
+                '$number',
+                style: TextStyle(
+                  fontSize: isCompact ? 18 : 22,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         );
