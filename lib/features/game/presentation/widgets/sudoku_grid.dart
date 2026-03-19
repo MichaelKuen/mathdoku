@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/game_provider.dart';
 import '../../domain/models/cell.dart';
 
@@ -46,14 +47,18 @@ class _SudokuCell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Color? backgroundColor;
     
+    final isCorrect = cell.blockStatus == CellStatus.correct || 
+                     cell.rowStatus == CellStatus.correct || 
+                     cell.colStatus == CellStatus.correct;
+                     
+    final isIncorrect = cell.blockStatus == CellStatus.incorrect || 
+                       cell.rowStatus == CellStatus.incorrect || 
+                       cell.colStatus == CellStatus.incorrect;
+
     // Priority for background color
-    if (cell.blockStatus == CellStatus.correct || 
-        cell.rowStatus == CellStatus.correct || 
-        cell.colStatus == CellStatus.correct) {
+    if (isCorrect) {
       backgroundColor = Colors.green.withValues(alpha: 0.2);
-    } else if (cell.blockStatus == CellStatus.incorrect || 
-               cell.rowStatus == CellStatus.incorrect || 
-               cell.colStatus == CellStatus.incorrect) {
+    } else if (isIncorrect) {
       backgroundColor = Colors.orange.withValues(alpha: 0.2);
     } else if (cell.isSelected) {
       backgroundColor = Colors.blue.withValues(alpha: 0.5);
@@ -63,6 +68,35 @@ class _SudokuCell extends ConsumerWidget {
 
     BorderSide thin = const BorderSide(color: Colors.grey, width: 0.5);
     BorderSide thick = const BorderSide(color: Colors.black, width: 2.0);
+
+    Widget cellContent = Center(
+      child: Text(
+        cell.value == 0 ? '' : '${cell.value}',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: cell.isFixed ? FontWeight.bold : FontWeight.normal,
+          color: cell.isError ? Colors.red : (cell.isFixed ? Colors.black : Colors.blue),
+        ),
+      ),
+    );
+
+    // Apply animations
+    if (cell.isSelected) {
+      cellContent = cellContent.animate(
+        onPlay: (controller) => controller.repeat(reverse: true),
+      ).scale(
+        begin: const Offset(1.0, 1.0),
+        end: const Offset(1.05, 1.05),
+        duration: 800.ms,
+        curve: Curves.easeInOut,
+      );
+    }
+
+    if (cell.isError) {
+      cellContent = cellContent.animate()
+        .shake(hz: 8, curve: Curves.easeInOut, duration: 300.ms)
+        .tint(color: Colors.red.withValues(alpha: 0.3), duration: 300.ms);
+    }
 
     return GestureDetector(
       onTap: () => ref.read(gameNotifierProvider.notifier).selectCell(cell.row, cell.col),
@@ -76,15 +110,19 @@ class _SudokuCell extends ConsumerWidget {
             right: cell.col == 8 ? thick : BorderSide.none,
           ),
         ),
-        child: Center(
-          child: Text(
-            cell.value == 0 ? '' : '${cell.value}',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: cell.isFixed ? FontWeight.bold : FontWeight.normal,
-              color: cell.isError ? Colors.red : (cell.isFixed ? Colors.black : Colors.blue),
-            ),
-          ),
+        child: Stack(
+          children: [
+            cellContent,
+            if (isCorrect)
+              Positioned.fill(
+                child: Container()
+                    .animate()
+                    .shimmer(
+                      duration: 600.ms,
+                      color: Colors.green.withValues(alpha: 0.4),
+                    ),
+              ),
+          ],
         ),
       ),
     );

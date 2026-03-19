@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:confetti/confetti.dart';
 import '../providers/game_provider.dart';
 import '../widgets/sudoku_grid.dart';
 import '../../domain/models/game_state.dart';
@@ -15,10 +17,18 @@ class GamePage extends ConsumerStatefulWidget {
 
 class _GamePageState extends ConsumerState<GamePage> {
   final FocusNode _focusNode = FocusNode();
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -79,11 +89,11 @@ class _GamePageState extends ConsumerState<GamePage> {
     final themeMode = ref.watch(themeNotifierProvider);
 
     ref.listen(gameNotifierProvider.select((s) => s.status), (previous, next) {
-      if (next == GameStatus.won) _showWinDialog(context, ref, gameState);
+      if (next == GameStatus.won) {
+        _confettiController.play();
+        _showWinDialog(context, ref, gameState);
+      }
     });
-
-    final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
 
     return Scaffold(
       appBar: AppBar(
@@ -113,78 +123,102 @@ class _GamePageState extends ConsumerState<GamePage> {
           ),
         ],
       ),
-      body: KeyboardListener(
-        focusNode: _focusNode,
-        autofocus: true,
-        onKeyEvent: _handleKeyEvent,
-        child: gameState.status == GameStatus.loading
-            ? const Center(child: CircularProgressIndicator())
-            : OrientationBuilder(
-                builder: (context, orientation) {
-                  bool isLandscape = orientation == Orientation.landscape;
+      body: Stack(
+        children: [
+          KeyboardListener(
+            focusNode: _focusNode,
+            autofocus: true,
+            onKeyEvent: _handleKeyEvent,
+            child: gameState.status == GameStatus.loading
+                ? const Center(child: CircularProgressIndicator())
+                : OrientationBuilder(
+                    builder: (context, orientation) {
+                      bool isLandscape = orientation == Orientation.landscape;
 
-                  if (isLandscape) {
-                    return SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Center(
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 500),
-                                  child: const SudokuGrid(),
+                      if (isLandscape) {
+                        return SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 500),
+                                      child: const SudokuGrid(),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      _CompactStatsRow(gameState: gameState),
+                                      const SizedBox(height: 8),
+                                      const _NumberPad(isVertical: true, isCompact: true),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              flex: 1,
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        children: [
+                          _StatsBar(gameState: gameState),
+                          Expanded(
+                            child: SafeArea(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  _CompactStatsRow(gameState: gameState),
-                                  const SizedBox(height: 8),
-                                  const _NumberPad(isVertical: true, isCompact: true),
+                                  const Spacer(),
+                                  Center(
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 500),
+                                      child: const SudokuGrid(),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: _NumberPad(isVertical: false),
+                                  ),
+                                  const SizedBox(height: 20),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  return Column(
-                    children: [
-                      _StatsBar(gameState: gameState),
-                      Expanded(
-                        child: SafeArea(
-                          child: Column(
-                            children: [
-                              const Spacer(),
-                              Center(
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 500),
-                                  child: const SudokuGrid(),
-                                ),
-                              ),
-                              const Spacer(),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                child: _NumberPad(isVertical: false),
-                              ),
-                              const SizedBox(height: 20),
-                            ],
                           ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                        ],
+                      );
+                    },
+                  ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              maxBlastForce: 20,
+              minBlastForce: 8,
+              emissionFrequency: 0.05,
+              numberOfParticles: 30,
+              gravity: 0.1,
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple,
+                Colors.amber,
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -192,18 +226,32 @@ class _GamePageState extends ConsumerState<GamePage> {
   void _showWinDialog(BuildContext context, WidgetRef ref, GameState state) {
     final minutes = (state.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (state.elapsedSeconds % 60).toString().padLeft(2, '0');
+    
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Center(child: Text('CONGRATULATIONS!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))),
+        title: Center(
+          child: const Text('CONGRATULATIONS!', 
+            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)
+          ).animate().fadeIn(duration: 400.ms).scale(delay: 200.ms),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.emoji_events, size: 80, color: Colors.amber),
+            const Icon(Icons.emoji_events, size: 80, color: Colors.amber)
+                .animate()
+                .scale(duration: 600.ms, curve: Curves.elasticOut)
+                .rotate(begin: -0.1, end: 0, duration: 600.ms),
             const SizedBox(height: 16),
-            Text('Time: $minutes:$seconds'),
-            Text('Mistakes: ${state.mistakes}/${state.maxMistakes}'),
+            Text('Time: $minutes:$seconds')
+                .animate()
+                .fadeIn(delay: 400.ms)
+                .slideX(begin: -0.2, end: 0),
+            Text('Mistakes: ${state.mistakes}/${state.maxMistakes}')
+                .animate()
+                .fadeIn(delay: 600.ms)
+                .slideX(begin: -0.2, end: 0),
           ],
         ),
         actions: [
@@ -214,7 +262,7 @@ class _GamePageState extends ConsumerState<GamePage> {
                 Navigator.of(context).pop();
               },
               child: const Text('PICK NEXT GAME'),
-            ),
+            ).animate().fadeIn(delay: 800.ms).moveY(begin: 20, end: 0),
           ),
         ],
       ),
@@ -263,7 +311,7 @@ class _StatsBar extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

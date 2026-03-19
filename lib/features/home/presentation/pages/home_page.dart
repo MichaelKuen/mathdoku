@@ -186,7 +186,7 @@ class _IconLegend extends StatelessWidget {
       padding: EdgeInsets.all(compact ? 12 : 24),
       margin: EdgeInsets.symmetric(horizontal: compact ? 0 : 24),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),

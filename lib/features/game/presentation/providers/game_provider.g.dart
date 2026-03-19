@@ -23,7 +23,7 @@ final puzzleRepositoryProvider = AutoDisposeProvider<PuzzleRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PuzzleRepositoryRef = AutoDisposeProviderRef<PuzzleRepository>;
-String _$gameNotifierHash() => r'92e4b0880a9ab8592135143d429aedab002617d2';
+String _$gameNotifierHash() => r'b560c5c67014add2f452be1c22262d57056a8be2';
 
 /// See also [GameNotifier].
 @ProviderFor(GameNotifier)

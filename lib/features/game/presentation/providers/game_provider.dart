@@ -80,7 +80,9 @@ class GameNotifier extends _$GameNotifier {
   void inputNumber(int number) {
     if (state.status != GameStatus.playing || 
         state.selectedRow == null || 
-        state.selectedCol == null) return;
+        state.selectedCol == null) {
+      return;
+    }
 
     final row = state.selectedRow!;
     final col = state.selectedCol!;
@@ -116,7 +118,9 @@ class GameNotifier extends _$GameNotifier {
   void eraseCell() {
     if (state.status != GameStatus.playing || 
         state.selectedRow == null || 
-        state.selectedCol == null) return;
+        state.selectedCol == null) {
+      return;
+    }
 
     final row = state.selectedRow!;
     final col = state.selectedCol!;
@@ -141,7 +145,9 @@ class GameNotifier extends _$GameNotifier {
     if (state.status != GameStatus.playing || 
         state.selectedRow == null || 
         state.selectedCol == null ||
-        state.hintsRemaining <= 0) return;
+        state.hintsRemaining <= 0) {
+      return;
+    }
 
     final row = state.selectedRow!;
     final col = state.selectedCol!;
