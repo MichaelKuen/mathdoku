@@ -1,3 +1,5 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,46 +22,39 @@ class SudokuApp extends ConsumerWidget {
     final themeMode = ref.watch(themeNotifierProvider);
 
     return MaterialApp(
-      title: 'Sudoku Pro',
+      title: 'Sudoku',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
-      
-      // LIGHT THEME
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2196F3),
-          surface: const Color(0xFFF8FAFC),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFFD32F2F),
+          onPrimary: Color(0xFFFFFFFF),
+          secondary: Color(0xFF1565C0),
+          onSecondary: Color(0xFFFFFFFF),
+          surface: Color(0xFFF5F5F5),
+          onSurface: Color(0xFF1A1A1A),
+          outline: Color(0xFFBDBDBD),
+          inversePrimary: Color(0xFFEEEEEE),
         ),
         textTheme: GoogleFonts.robotoMonoTextTheme(),
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          backgroundColor: Color(0xFFF8FAFC),
-          elevation: 0,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        ),
+        appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
-
-      // DARK THEME
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2196F3),
-          brightness: Brightness.dark,
-          surface: const Color(0xFF0F172A),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFFF5252),
+          onPrimary: Color(0xFFFFFFFF),
+          secondary: Color(0xFF40C4FF),
+          onSecondary: Color(0xFF002233),
+          surface: Color(0xFF1A1A2E),
+          onSurface: Color(0xFFE0E0E0),
+          outline: Color(0xFF5A5A7A),
+          inversePrimary: Color(0xFF2A2A4A),
         ),
         textTheme: GoogleFonts.robotoMonoTextTheme(ThemeData.dark().textTheme),
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          backgroundColor: Color(0xFF0F172A),
-          elevation: 0,
-        ),
+        appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
       home: const HomePage(),
     );

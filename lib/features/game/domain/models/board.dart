@@ -1,3 +1,5 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'cell.dart';
 

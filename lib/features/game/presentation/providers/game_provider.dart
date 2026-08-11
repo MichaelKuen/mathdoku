@@ -1,3 +1,5 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/game_state.dart';

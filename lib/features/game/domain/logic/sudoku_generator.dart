@@ -1,3 +1,5 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'dart:math';
 import '../models/board.dart';
 import '../models/cell.dart';
