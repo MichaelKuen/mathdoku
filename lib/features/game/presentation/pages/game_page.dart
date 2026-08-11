@@ -1,3 +1,5 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,8 @@ import '../providers/game_provider.dart';
 import '../widgets/sudoku_grid.dart';
 import '../../domain/models/game_state.dart';
 import 'package:sudoku/core/providers/theme_provider.dart';
+import 'package:sudoku/shared/widgets/games_hub_sheet.dart';
+import 'package:sudoku/shared/pages/privacy_policy_page.dart';
 
 class GamePage extends ConsumerStatefulWidget {
   const GamePage({super.key});
@@ -37,7 +41,8 @@ class _GamePageState extends ConsumerState<GamePage> {
       final String logicalKey = event.logicalKey.keyLabel;
       if (RegExp(r'^[1-9]$').hasMatch(logicalKey)) {
         ref.read(gameNotifierProvider.notifier).inputNumber(int.parse(logicalKey));
-      } else if (event.logicalKey == LogicalKeyboardKey.backspace || event.logicalKey == LogicalKeyboardKey.delete) {
+      } else if (event.logicalKey == LogicalKeyboardKey.backspace ||
+          event.logicalKey == LogicalKeyboardKey.delete) {
         ref.read(gameNotifierProvider.notifier).eraseCell();
       } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
         _moveSelection(-1, 0);
@@ -67,7 +72,7 @@ class _GamePageState extends ConsumerState<GamePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('New Game?'),
-        content: const Text('Are you sure you want to abandon this game and start a new one?'),
+        content: const Text('Abandon this game and start a new one?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -78,7 +83,10 @@ class _GamePageState extends ConsumerState<GamePage> {
               Navigator.of(context).pop();
               ref.read(gameNotifierProvider.notifier).startGame(state.difficulty);
             },
-            child: const Text('NEW GAME', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'NEW GAME',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
           ),
         ],
       ),
@@ -88,7 +96,9 @@ class _GamePageState extends ConsumerState<GamePage> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameNotifierProvider);
-    final themeMode = ref.watch(themeNotifierProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final appBarBg = isDark ? const Color(0xFF252540) : const Color(0xFFEEEEEE);
 
     ref.listen(gameNotifierProvider.select((s) => s.status), (previous, next) {
       if (next == GameStatus.won) {
@@ -99,38 +109,26 @@ class _GamePageState extends ConsumerState<GamePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(gameState.difficulty.name.toUpperCase()),
+        title: const Text('Sudoku'),
+        backgroundColor: appBarBg,
         actions: [
           IconButton(
-            icon: Icon(
-              gameState.isPencilMode ? Icons.edit : Icons.edit_outlined, 
-              color: gameState.isPencilMode ? Colors.blue : null,
-              size: 22,
+            icon: const Icon(Icons.sports_esports),
+            tooltip: 'Games Hub',
+            onPressed: () => showGamesHub(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.privacy_tip_outlined),
+            tooltip: 'Privacy Policy',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
             ),
-            onPressed: () => ref.read(gameNotifierProvider.notifier).togglePencilMode(),
-            tooltip: 'Pencil Mode (N)',
           ),
           IconButton(
-            icon: Icon(themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode, size: 22),
-            onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 22),
             tooltip: 'Toggle Theme',
-          ),
-          IconButton(
-            icon: const Icon(Icons.lightbulb_outline, color: Colors.amber, size: 22),
-            onPressed: gameState.hintsRemaining > 0 
-                ? () => ref.read(gameNotifierProvider.notifier).useHint() 
-                : null,
-            tooltip: 'Hint (${gameState.hintsRemaining})',
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, size: 22),
-            onPressed: () => ref.read(gameNotifierProvider.notifier).eraseCell(),
-            tooltip: 'Erase',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 22),
-            onPressed: () => _showRefreshConfirmation(context, ref, gameState),
-            tooltip: 'New Game',
+            onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
           ),
         ],
       ),
@@ -142,70 +140,12 @@ class _GamePageState extends ConsumerState<GamePage> {
             onKeyEvent: _handleKeyEvent,
             child: gameState.status == GameStatus.loading
                 ? const Center(child: CircularProgressIndicator())
-                : OrientationBuilder(
-                    builder: (context, orientation) {
-                      bool isLandscape = orientation == Orientation.landscape;
-
-                      if (isLandscape) {
-                        return SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: Center(
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 500),
-                                      child: const SudokuGrid(),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  flex: 1,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      _CompactStatsRow(gameState: gameState),
-                                      const SizedBox(height: 8),
-                                      const _NumberPad(isVertical: true, isCompact: true),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth >= 600) {
+                        return _buildWideLayout(context, ref, gameState, theme, isDark);
                       }
-
-                      return Column(
-                        children: [
-                          _StatsBar(gameState: gameState),
-                          Expanded(
-                            child: SafeArea(
-                              child: Column(
-                                children: [
-                                  const Spacer(),
-                                  Center(
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 500),
-                                      child: const SudokuGrid(),
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                    child: _NumberPad(isVertical: false),
-                                  ),
-                                  const SizedBox(height: 20),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
+                      return _buildNarrowLayout(context, ref, gameState, isDark);
                     },
                   ),
           ),
@@ -234,17 +174,215 @@ class _GamePageState extends ConsumerState<GamePage> {
     );
   }
 
+  Widget _buildNarrowLayout(
+    BuildContext context,
+    WidgetRef ref,
+    GameState gameState,
+    bool isDark,
+  ) {
+    return Column(
+      children: [
+        _StatsBar(gameState: gameState, isDark: isDark),
+        Expanded(
+          child: SafeArea(
+            child: Column(
+              children: [
+                const Spacer(),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400, maxHeight: 400),
+                    child: const SudokuGrid(),
+                  ),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _NumberPad(isVertical: false),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWideLayout(
+    BuildContext context,
+    WidgetRef ref,
+    GameState gameState,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final sidebarBg = isDark ? const Color(0xFF252540) : const Color(0xFFEEEEEE);
+    final sidebarBorder = isDark ? const Color(0xFF5A5A7A) : const Color(0xFFCCCCCC);
+    final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
+
+    return Row(
+      children: [
+        const SizedBox(width: 180),
+        Expanded(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400, maxHeight: 400),
+                  child: const SudokuGrid(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: 180,
+          decoration: BoxDecoration(
+            color: sidebarBg,
+            border: Border(left: BorderSide(color: sidebarBorder)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'MODE',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _SidebarButton(
+                label: gameState.isPencilMode ? 'Pencil ON' : 'Pencil',
+                icon: Icons.edit_outlined,
+                isSelected: gameState.isPencilMode,
+                onPressed: () => ref.read(gameNotifierProvider.notifier).togglePencilMode(),
+              ),
+              const Divider(height: 24),
+              Text(
+                'ACTIONS',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: Icon(
+                  Icons.lightbulb_outline,
+                  size: 16,
+                  color: gameState.hintsRemaining > 0 ? Colors.amber : null,
+                ),
+                label: Text('Hint (${gameState.hintsRemaining})'),
+                onPressed: gameState.hintsRemaining > 0
+                    ? () => ref.read(gameNotifierProvider.notifier).useHint()
+                    : null,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: theme.colorScheme.outline),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.delete_outline, size: 16),
+                label: const Text('Erase'),
+                onPressed: () => ref.read(gameNotifierProvider.notifier).eraseCell(),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: theme.colorScheme.outline),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('New Game'),
+                onPressed: () => _showRefreshConfirmation(context, ref, gameState),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: theme.colorScheme.outline),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const Divider(height: 24),
+              Text(
+                'NUMBER PAD',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _NumberPad(isVertical: true, isCompact: true),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E38) : const Color(0xFFF0F0F0),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF3A3A5A) : const Color(0xFFD0D0D0),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.timer_outlined, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$minutes:$seconds',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 14, color: Colors.redAccent),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${gameState.mistakes}/${gameState.maxMistakes}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.sports_esports, size: 16),
+                label: const Text('More Games', style: TextStyle(fontSize: 12)),
+                onPressed: () => showGamesHub(context),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   void _showWinDialog(BuildContext context, WidgetRef ref, GameState state) {
     final minutes = (state.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (state.elapsedSeconds % 60).toString().padLeft(2, '0');
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Center(
-          child: const Text('CONGRATULATIONS!', 
-            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)
+          child: const Text(
+            'CONGRATULATIONS!',
+            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
           ).animate().fadeIn(duration: 400.ms).scale(delay: 200.ms),
         ),
         content: Column(
@@ -281,39 +419,51 @@ class _GamePageState extends ConsumerState<GamePage> {
   }
 }
 
-class _CompactStatsRow extends StatelessWidget {
-  final GameState gameState;
-  const _CompactStatsRow({required this.gameState});
+class _SidebarButton extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final bool isSelected;
+  final VoidCallback onPressed;
+
+  const _SidebarButton({
+    required this.label,
+    this.icon,
+    required this.isSelected,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.timer_outlined, size: 14, color: Colors.blue),
-            const SizedBox(width: 4),
-            Text('$minutes:$seconds', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-          ],
+    final theme = Theme.of(context);
+    if (isSelected) {
+      return FilledButton.icon(
+        onPressed: null,
+        icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
+        label: Text(label, style: const TextStyle(fontSize: 12)),
+        style: FilledButton.styleFrom(
+          disabledBackgroundColor: theme.colorScheme.primary,
+          disabledForegroundColor: theme.colorScheme.onPrimary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        Row(
-          children: [
-            const Icon(Icons.error_outline, size: 14, color: Colors.redAccent),
-            const SizedBox(width: 4),
-            Text('${gameState.mistakes}/${gameState.maxMistakes}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.redAccent)),
-          ],
-        ),
-      ],
+      );
+    }
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: theme.colorScheme.outline),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
     );
   }
 }
 
 class _StatsBar extends StatelessWidget {
   final GameState gameState;
-  const _StatsBar({required this.gameState});
+  final bool isDark;
+
+  const _StatsBar({required this.gameState, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -322,13 +472,13 @@ class _StatsBar extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      color: isDark ? const Color(0xFF1E1E38) : const Color(0xFFF0F0F0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              const Icon(Icons.timer_outlined, size: 18, color: Colors.blue),
+              const Icon(Icons.timer_outlined, size: 18),
               const SizedBox(width: 6),
               Text(
                 '$minutes:$seconds',
@@ -342,7 +492,11 @@ class _StatsBar extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 'Mistakes: ${gameState.mistakes}/${gameState.maxMistakes}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent,
+                ),
               ),
             ],
           ),
@@ -355,11 +509,13 @@ class _StatsBar extends StatelessWidget {
 class _NumberPad extends ConsumerWidget {
   final bool isVertical;
   final bool isCompact;
+
   const _NumberPad({required this.isVertical, this.isCompact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameNotifierProvider);
+    final theme = Theme.of(context);
     final board = gameState.board;
 
     return GridView.builder(
@@ -367,38 +523,38 @@ class _NumberPad extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: isVertical ? 3 : 9,
-        crossAxisSpacing: isCompact ? 6 : 8,
-        mainAxisSpacing: isCompact ? 6 : 8,
-        childAspectRatio: isVertical ? 1.4 : 1.0,
+        crossAxisSpacing: isCompact ? 4 : 8,
+        mainAxisSpacing: isCompact ? 4 : 8,
+        childAspectRatio: isVertical ? 1.2 : 1.0,
       ),
       itemCount: 9,
       itemBuilder: (context, index) {
         final number = index + 1;
-        
-        // Smart Number Pad: Check if all 9 instances are correctly placed
         bool isComplete = false;
         if (board != null) {
           int count = 0;
           for (int r = 0; r < 9; r++) {
             for (int c = 0; c < 9; c++) {
               final cell = board.getCell(r, c);
-              if (cell.value == number && !cell.isError) {
-                count++;
-              }
+              if (cell.value == number && !cell.isError) count++;
             }
           }
           isComplete = count >= 9;
         }
 
         return InkWell(
-          onTap: isComplete ? null : () => ref.read(gameNotifierProvider.notifier).inputNumber(number),
+          onTap: isComplete
+              ? null
+              : () => ref.read(gameNotifierProvider.notifier).inputNumber(number),
           borderRadius: BorderRadius.circular(8),
           child: Opacity(
             opacity: isComplete ? 0.3 : 1.0,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.05),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                color: theme.colorScheme.secondary.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: theme.colorScheme.secondary.withValues(alpha: 0.25),
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Stack(
@@ -407,8 +563,8 @@ class _NumberPad extends ConsumerWidget {
                     child: Text(
                       '$number',
                       style: TextStyle(
-                        fontSize: isCompact ? 18 : 22,
-                        color: Colors.blue,
+                        fontSize: isCompact ? 16 : 22,
+                        color: theme.colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -417,7 +573,7 @@ class _NumberPad extends ConsumerWidget {
                     const Positioned(
                       top: 2,
                       right: 2,
-                      child: Icon(Icons.check_circle, size: 12, color: Colors.green),
+                      child: Icon(Icons.check_circle, size: 10, color: Colors.green),
                     ),
                 ],
               ),

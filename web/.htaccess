@@ -1,0 +1,27 @@
+# Required for Flutter web: serve .wasm files with correct MIME type
+AddType application/wasm .wasm
+
+# Serve .js files correctly
+AddType application/javascript .js
+
+# Allow cross-origin requests for Flutter engine assets
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|wasm|json)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
+
+# Compression for faster loading
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/wasm
+  AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Cache static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType application/wasm "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+</IfModule>

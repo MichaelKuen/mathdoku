@@ -1,12 +1,12 @@
 {
-    "name": "sudoku",
-    "short_name": "sudoku",
+    "name": "Sudoku by FullStackShack",
+    "short_name": "Sudoku",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#1A1A2E",
+    "theme_color": "#D32F2F",
+    "description": "Play Sudoku online — Easy, Medium, and Hard puzzles with hints, pencil mode, and a timer.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

@@ -1,210 +1,293 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sudoku/features/game/domain/models/game_state.dart';
 import 'package:sudoku/features/game/presentation/providers/game_provider.dart';
 import 'package:sudoku/features/game/presentation/pages/game_page.dart';
 import 'package:sudoku/core/providers/theme_provider.dart';
+import 'package:sudoku/shared/widgets/games_hub_sheet.dart';
+import 'package:sudoku/shared/pages/privacy_policy_page.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeNotifierProvider);
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  Difficulty _selectedDifficulty = Difficulty.easy;
+
+  void _onStart() {
+    ref.read(gameNotifierProvider.notifier).startGame(_selectedDifficulty);
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const GamePage()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final appBarBg = isDark ? const Color(0xFF252540) : const Color(0xFFEEEEEE);
 
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Sudoku'),
+        backgroundColor: appBarBg,
         actions: [
           IconButton(
-            icon: Icon(themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+            icon: const Icon(Icons.sports_esports),
+            tooltip: 'Games Hub',
+            onPressed: () => showGamesHub(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.privacy_tip_outlined),
+            tooltip: 'Privacy Policy',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
+            ),
+          ),
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            tooltip: 'Toggle Theme',
             onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
           ),
         ],
       ),
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          if (orientation == Orientation.landscape) {
-            return _buildLandscape(context, ref);
-          } else {
-            return _buildPortrait(context, ref);
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 600) {
+            return _buildWideLayout(context, theme, isDark);
           }
+          return _buildNarrowLayout(context, theme);
         },
       ),
     );
   }
 
-  Widget _buildPortrait(BuildContext context, WidgetRef ref) {
+  Widget _buildNarrowLayout(BuildContext context, ThemeData theme) {
     return SingleChildScrollView(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              const Text(
-                'SUDOKU',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                ),
-              ),
-              const SizedBox(height: 40),
-              _DifficultyButton(
-                label: 'EASY',
-                color: Colors.green,
-                onPressed: () => _onStart(context, ref, Difficulty.easy),
-              ),
-              const SizedBox(height: 16),
-              _DifficultyButton(
-                label: 'MEDIUM',
-                color: Colors.orange,
-                onPressed: () => _onStart(context, ref, Difficulty.medium),
-              ),
-              const SizedBox(height: 16),
-              _DifficultyButton(
-                label: 'HARD',
-                color: Colors.red,
-                onPressed: () => _onStart(context, ref, Difficulty.hard),
-              ),
-              const SizedBox(height: 40),
-              const _IconLegend(),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLandscape(BuildContext context, WidgetRef ref) {
-    return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            const SizedBox(height: 24),
+            Text(
               'SUDOKU',
-              style: TextStyle(
-                fontSize: 32,
+              style: theme.textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 4,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Expanded(
-                    flex: 1,
-                    child: SingleChildScrollView(
-                      child: _IconLegend(compact: true),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _DifficultyButton(
-                          label: 'EASY',
-                          color: Colors.green,
-                          onPressed: () => _onStart(context, ref, Difficulty.easy),
-                        ),
-                        const SizedBox(height: 12),
-                        _DifficultyButton(
-                          label: 'MEDIUM',
-                          color: Colors.orange,
-                          onPressed: () => _onStart(context, ref, Difficulty.medium),
-                        ),
-                        const SizedBox(height: 12),
-                        _DifficultyButton(
-                          label: 'HARD',
-                          color: Colors.red,
-                          onPressed: () => _onStart(context, ref, Difficulty.hard),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 32),
+            SegmentedButton<Difficulty>(
+              segments: const [
+                ButtonSegment(
+                  value: Difficulty.easy,
+                  label: Text('Easy'),
+                  icon: Icon(Icons.sentiment_satisfied_alt, size: 16),
+                ),
+                ButtonSegment(
+                  value: Difficulty.medium,
+                  label: Text('Medium'),
+                  icon: Icon(Icons.sentiment_neutral, size: 16),
+                ),
+                ButtonSegment(
+                  value: Difficulty.hard,
+                  label: Text('Hard'),
+                  icon: Icon(Icons.sentiment_very_dissatisfied, size: 16),
+                ),
+              ],
+              selected: {_selectedDifficulty},
+              onSelectionChanged: (Set<Difficulty> selection) {
+                setState(() => _selectedDifficulty = selection.first);
+              },
+            ),
+            const SizedBox(height: 24),
+            const _IconLegend(),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _onStart,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text(
+                'Start Game',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  void _onStart(BuildContext context, WidgetRef ref, Difficulty difficulty) {
-    ref.read(gameNotifierProvider.notifier).startGame(difficulty);
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const GamePage()),
+  Widget _buildWideLayout(BuildContext context, ThemeData theme, bool isDark) {
+    final sidebarBg = isDark ? const Color(0xFF252540) : const Color(0xFFEEEEEE);
+    final sidebarBorder = isDark ? const Color(0xFF5A5A7A) : const Color(0xFFCCCCCC);
+
+    return Row(
+      children: [
+        const SizedBox(width: 180),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 24),
+                  Text(
+                    'SUDOKU',
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: const _IconLegend(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: 180,
+          decoration: BoxDecoration(
+            color: sidebarBg,
+            border: Border(left: BorderSide(color: sidebarBorder)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'DIFFICULTY',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _SidebarButton(
+                label: 'Easy',
+                isSelected: _selectedDifficulty == Difficulty.easy,
+                onPressed: () => setState(() => _selectedDifficulty = Difficulty.easy),
+              ),
+              const SizedBox(height: 8),
+              _SidebarButton(
+                label: 'Medium',
+                isSelected: _selectedDifficulty == Difficulty.medium,
+                onPressed: () => setState(() => _selectedDifficulty = Difficulty.medium),
+              ),
+              const SizedBox(height: 8),
+              _SidebarButton(
+                label: 'Hard',
+                isSelected: _selectedDifficulty == Difficulty.hard,
+                onPressed: () => setState(() => _selectedDifficulty = Difficulty.hard),
+              ),
+              const Divider(height: 32),
+              FilledButton(
+                onPressed: _onStart,
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Start'),
+              ),
+              const Spacer(),
+              const Divider(),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.sports_esports, size: 16),
+                label: const Text('More Games', style: TextStyle(fontSize: 12)),
+                onPressed: () => showGamesHub(context),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _DifficultyButton extends StatelessWidget {
+class _SidebarButton extends StatelessWidget {
   final String label;
-  final Color color;
+  final bool isSelected;
   final VoidCallback onPressed;
 
-  const _DifficultyButton({
+  const _SidebarButton({
     required this.label,
-    required this.color,
+    required this.isSelected,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200,
-      height: 45,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    final theme = Theme.of(context);
+    if (isSelected) {
+      return FilledButton(
+        onPressed: null,
+        style: FilledButton.styleFrom(
+          disabledBackgroundColor: theme.colorScheme.primary,
+          disabledForegroundColor: theme.colorScheme.onPrimary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        onPressed: onPressed,
         child: Text(label),
+      );
+    }
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: theme.colorScheme.outline),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
+      child: Text(label),
     );
   }
 }
 
 class _IconLegend extends StatelessWidget {
-  final bool compact;
-  const _IconLegend({this.compact = false});
+  const _IconLegend();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
-      padding: EdgeInsets.all(compact ? 12 : 24),
-      margin: EdgeInsets.symmetric(horizontal: compact ? 0 : 24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        color: isDark ? const Color(0xFF252540) : Colors.white,
+        border: Border.all(color: theme.colorScheme.outline),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'ICON LEGEND',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+            style: theme.textTheme.labelMedium?.copyWith(
+              letterSpacing: 1.2,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
           ),
-          SizedBox(height: compact ? 8 : 16),
-          _LegendItem(icon: Icons.dark_mode, label: 'Dark Mode', compact: compact),
-          _LegendItem(icon: Icons.light_mode, label: 'Light Mode', compact: compact),
-          _LegendItem(icon: Icons.delete_outline, label: 'Erase Cell', compact: compact),
-          _LegendItem(icon: Icons.refresh, label: 'New Game', compact: compact),
-          _LegendItem(icon: Icons.lightbulb_outline, label: 'Hint (Reveal)', compact: compact),
-          _LegendItem(icon: Icons.error_outline, label: 'Mistakes', compact: compact),
+          const SizedBox(height: 12),
+          _LegendItem(icon: Icons.edit_outlined, label: 'Pencil mode (N)'),
+          _LegendItem(icon: Icons.lightbulb_outline, label: 'Hint (H)'),
+          _LegendItem(icon: Icons.delete_outline, label: 'Erase cell'),
+          _LegendItem(icon: Icons.refresh, label: 'New game'),
+          _LegendItem(icon: Icons.error_outline, label: 'Mistake counter'),
+          _LegendItem(icon: Icons.timer_outlined, label: 'Elapsed time'),
         ],
       ),
     );
@@ -214,28 +297,19 @@ class _IconLegend extends StatelessWidget {
 class _LegendItem extends StatelessWidget {
   final IconData icon;
   final String label;
-  final bool compact;
 
-  const _LegendItem({
-    required this.icon,
-    required this.label,
-    this.compact = false,
-  });
+  const _LegendItem({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: compact ? 2.0 : 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Icon(icon, size: compact ? 16 : 20, color: Theme.of(context).colorScheme.primary),
+          Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(fontSize: compact ? 11 : 13, color: Colors.grey),
-            ),
-          ),
+          Text(label, style: theme.textTheme.bodySmall),
         ],
       ),
     );

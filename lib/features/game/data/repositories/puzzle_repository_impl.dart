@@ -1,3 +1,5 @@
+// Copyright © FullStackShack. All rights reserved.
+// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart';
