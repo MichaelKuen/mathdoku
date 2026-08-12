@@ -1,6 +1,7 @@
 # Required for Flutter web: correct MIME types
 AddType application/wasm .wasm
 AddType application/javascript .js
+AddType text/javascript .mjs
 AddType font/otf .otf
 AddType font/ttf .ttf
 AddType font/woff .woff
