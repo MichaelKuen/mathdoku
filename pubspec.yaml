@@ -14,7 +14,6 @@ dependencies:
   riverpod_annotation: ^2.3.5
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
-  google_fonts: ^6.2.1
   flutter_animate: ^4.5.2
   confetti: ^0.7.0
   url_launcher: ^6.3.1
@@ -27,6 +26,7 @@ dev_dependencies:
   freezed: ^2.5.7
   json_serializable: ^6.9.0 
   riverpod_generator: ^2.6.4
+  image: ^4.2.0
 
 flutter:
   uses-material-design: true
@@ -35,3 +35,8 @@ flutter:
     - assets/puzzles/easy.json
     - assets/puzzles/medium.json
     - assets/puzzles/hard.json
+
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Variable.ttf

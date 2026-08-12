@@ -1,12 +1,14 @@
-# Required for Flutter web: serve .wasm files with correct MIME type
+# Required for Flutter web: correct MIME types
 AddType application/wasm .wasm
-
-# Serve .js files correctly
 AddType application/javascript .js
+AddType font/otf .otf
+AddType font/ttf .ttf
+AddType font/woff .woff
+AddType font/woff2 .woff2
 
 # Allow cross-origin requests for Flutter engine assets
 <IfModule mod_headers.c>
-  <FilesMatch "\.(js|wasm|json)$">
+  <FilesMatch "\.(js|wasm|json|otf|ttf|woff|woff2)$">
     Header set Access-Control-Allow-Origin "*"
   </FilesMatch>
 </IfModule>
@@ -16,6 +18,24 @@ AddType application/javascript .js
   AddOutputFilterByType DEFLATE application/javascript
   AddOutputFilterByType DEFLATE application/wasm
   AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE font/otf
+  AddOutputFilterByType DEFLATE font/ttf
+  AddOutputFilterByType DEFLATE font/woff
+  AddOutputFilterByType DEFLATE font/woff2
+</IfModule>
+
+# Never cache index.html so browsers always get the latest build
+<FilesMatch "index\.html$">
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+  Header set Pragma "no-cache"
+  Header set Expires 0
+</FilesMatch>
+
+# Fingerprinted assets (Flutter uses content-hashed filenames) — safe to cache forever
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|wasm)$">
+    Header append Cache-Control "immutable"
+  </FilesMatch>
 </IfModule>
 
 # Cache static assets
@@ -24,4 +44,8 @@ AddType application/javascript .js
   ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType application/wasm "access plus 1 year"
   ExpiresByType image/png "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>

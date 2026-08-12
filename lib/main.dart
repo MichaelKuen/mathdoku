@@ -2,7 +2,7 @@
 // Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'features/home/presentation/pages/home_page.dart';
 import 'core/providers/theme_provider.dart';
 
@@ -37,7 +37,7 @@ class SudokuApp extends ConsumerWidget {
           outline: Color(0xFFBDBDBD),
           inversePrimary: Color(0xFFEEEEEE),
         ),
-        textTheme: GoogleFonts.robotoMonoTextTheme(),
+        textTheme: ThemeData().textTheme.apply(fontFamily: 'RobotoMono'),
         appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
       darkTheme: ThemeData(
@@ -53,7 +53,7 @@ class SudokuApp extends ConsumerWidget {
           outline: Color(0xFF5A5A7A),
           inversePrimary: Color(0xFF2A2A4A),
         ),
-        textTheme: GoogleFonts.robotoMonoTextTheme(ThemeData.dark().textTheme),
+        textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'RobotoMono'),
         appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
       home: const HomePage(),
