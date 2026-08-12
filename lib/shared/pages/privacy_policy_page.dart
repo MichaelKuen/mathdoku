@@ -1,4 +1,4 @@
-// Copyright © FullStackShack. All rights reserved.
+// Copyright © App Verse Games. All rights reserved.
 // Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -62,7 +62,7 @@ class _SummaryTab extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.info_outline, color: Color(0xFF7986CB), size: 18),
+              const Text('ℹ️', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -76,31 +76,31 @@ class _SummaryTab extends StatelessWidget {
           ),
         ),
         _SummaryItem(
-          icon: Icons.block,
+          emoji: '🚫',
           iconColor: theme.colorScheme.primary,
           title: 'No Data Collected',
           description: 'We do not collect, store, or transmit any personal information.',
         ),
         _SummaryItem(
-          icon: Icons.wifi_off,
+          emoji: '📵',
           iconColor: theme.colorScheme.secondary,
           title: 'Fully Offline',
           description: 'Sudoku works entirely offline. No internet connection required.',
         ),
         _SummaryItem(
-          icon: Icons.account_circle_outlined,
+          emoji: '👤',
           iconColor: const Color(0xFF69F0AE),
           title: 'No Account Required',
           description: 'Play instantly — no sign-up, no login, no tracking.',
         ),
         _SummaryItem(
-          icon: Icons.storage_outlined,
+          emoji: '💾',
           iconColor: const Color(0xFFFFD740),
           title: 'Local Storage Only',
           description: 'Game progress is saved locally on your device only.',
         ),
         _SummaryItem(
-          icon: Icons.ads_click,
+          emoji: '📢',
           iconColor: const Color(0xFF7986CB),
           title: 'No Ads or Analytics',
           description:
@@ -116,11 +116,11 @@ class _SummaryTab extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          icon: const Icon(Icons.email_outlined),
+          icon: const Text('📧', style: TextStyle(fontSize: 18)),
           label: const Text('Contact Us'),
           onPressed: () async {
             final uri = Uri.parse(
-              'mailto:privacy@fullstackshack.com?subject=Sudoku%20Privacy',
+              'mailto:play@appversegames.com?subject=Sudoku%20Privacy',
             );
             if (await canLaunchUrl(uri)) launchUrl(uri);
           },
@@ -131,13 +131,13 @@ class _SummaryTab extends StatelessWidget {
 }
 
 class _SummaryItem extends StatelessWidget {
-  final IconData icon;
+  final String emoji;
   final Color iconColor;
   final String title;
   final String description;
 
   const _SummaryItem({
-    required this.icon,
+    required this.emoji,
     required this.iconColor,
     required this.title,
     required this.description,
@@ -166,7 +166,7 @@ class _SummaryItem extends StatelessWidget {
               color: iconColor.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: iconColor, size: 22),
+            child: Text(emoji, style: const TextStyle(fontSize: 22)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -206,7 +206,7 @@ class _FullPolicyTab extends StatelessWidget {
           number: '1',
           title: 'Introduction',
           body:
-              'FullStackShack ("we", "our", or "us") operates the Sudoku mobile application. '
+              'App Verse Games ("we", "our", or "us") operates the Sudoku mobile application. '
               'This Privacy Policy explains our practices regarding the collection, use, and '
               'disclosure of information when you use our app.',
         ),
@@ -254,7 +254,7 @@ class _FullPolicyTab extends StatelessWidget {
           title: 'Contact Us',
           body:
               'If you have any questions about this Privacy Policy, please contact us at '
-              'privacy@fullstackshack.com.',
+              'play@appversegames.com.',
         ),
       ],
     );

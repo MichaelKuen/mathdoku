@@ -1,4 +1,4 @@
-// Copyright © FullStackShack. All rights reserved.
+// Copyright © App Verse Games. All rights reserved.
 // Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,12 +38,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         backgroundColor: appBarBg,
         actions: [
           IconButton(
-            icon: const Icon(Icons.sports_esports),
+            icon: const Text('🎮', style: TextStyle(fontSize: 20)),
             tooltip: 'Games Hub',
             onPressed: () => showGamesHub(context),
           ),
           IconButton(
-            icon: const Icon(Icons.privacy_tip_outlined),
+            icon: const Text('🔒', style: TextStyle(fontSize: 20)),
             tooltip: 'Privacy Policy',
             onPressed: () => Navigator.push(
               context,
@@ -51,7 +51,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ),
           IconButton(
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            icon: Text(isDark ? '☀️' : '🌙', style: const TextStyle(fontSize: 20)),
             tooltip: 'Toggle Theme',
             onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
           ),
@@ -86,21 +86,22 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             const SizedBox(height: 32),
             SegmentedButton<Difficulty>(
+              showSelectedIcon: false,
               segments: const [
                 ButtonSegment(
                   value: Difficulty.easy,
                   label: Text('Easy'),
-                  icon: Icon(Icons.sentiment_satisfied_alt, size: 16),
+                  icon: Text('😊', style: TextStyle(fontSize: 14)),
                 ),
                 ButtonSegment(
                   value: Difficulty.medium,
                   label: Text('Medium'),
-                  icon: Icon(Icons.sentiment_neutral, size: 16),
+                  icon: Text('😐', style: TextStyle(fontSize: 14)),
                 ),
                 ButtonSegment(
                   value: Difficulty.hard,
                   label: Text('Hard'),
-                  icon: Icon(Icons.sentiment_very_dissatisfied, size: 16),
+                  icon: Text('😣', style: TextStyle(fontSize: 14)),
                 ),
               ],
               selected: {_selectedDifficulty},
@@ -207,7 +208,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               const Spacer(),
               const Divider(),
               OutlinedButton.icon(
-                icon: const Icon(Icons.sports_esports, size: 16),
+                icon: const Text('🎮', style: TextStyle(fontSize: 14)),
                 label: const Text('More Games', style: TextStyle(fontSize: 12)),
                 onPressed: () => showGamesHub(context),
               ),
@@ -282,12 +283,12 @@ class _IconLegend extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _LegendItem(icon: Icons.edit_outlined, label: 'Pencil mode (N)'),
-          _LegendItem(icon: Icons.lightbulb_outline, label: 'Hint (H)'),
-          _LegendItem(icon: Icons.delete_outline, label: 'Erase cell'),
-          _LegendItem(icon: Icons.refresh, label: 'New game'),
-          _LegendItem(icon: Icons.error_outline, label: 'Mistake counter'),
-          _LegendItem(icon: Icons.timer_outlined, label: 'Elapsed time'),
+          _LegendItem(emoji: '✏️', label: 'Pencil mode (N)'),
+          _LegendItem(emoji: '💡', label: 'Hint (H)'),
+          _LegendItem(emoji: '🗑️', label: 'Erase cell'),
+          _LegendItem(emoji: '🔄', label: 'New game'),
+          _LegendItem(emoji: '⚠️', label: 'Mistake counter'),
+          _LegendItem(emoji: '⏱️', label: 'Elapsed time'),
         ],
       ),
     );
@@ -295,10 +296,10 @@ class _IconLegend extends StatelessWidget {
 }
 
 class _LegendItem extends StatelessWidget {
-  final IconData icon;
+  final String emoji;
   final String label;
 
-  const _LegendItem({required this.icon, required this.label});
+  const _LegendItem({required this.emoji, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +308,7 @@ class _LegendItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
+          Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 12),
           Text(label, style: theme.textTheme.bodySmall),
         ],

@@ -1,4 +1,4 @@
-// Copyright © FullStackShack. All rights reserved.
+// Copyright © App Verse Games. All rights reserved.
 // Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -111,14 +111,19 @@ class _GamePageState extends ConsumerState<GamePage> {
       appBar: AppBar(
         title: const Text('Sudoku'),
         backgroundColor: appBarBg,
+        leading: IconButton(
+          icon: const Text('⬅️', style: TextStyle(fontSize: 20)),
+          tooltip: 'Back',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sports_esports),
+            icon: const Text('🎮', style: TextStyle(fontSize: 20)),
             tooltip: 'Games Hub',
             onPressed: () => showGamesHub(context),
           ),
           IconButton(
-            icon: const Icon(Icons.privacy_tip_outlined),
+            icon: const Text('🔒', style: TextStyle(fontSize: 20)),
             tooltip: 'Privacy Policy',
             onPressed: () => Navigator.push(
               context,
@@ -126,7 +131,7 @@ class _GamePageState extends ConsumerState<GamePage> {
             ),
           ),
           IconButton(
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 22),
+            icon: Text(isDark ? '☀️' : '🌙', style: const TextStyle(fontSize: 20)),
             tooltip: 'Toggle Theme',
             onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
           ),
@@ -180,6 +185,11 @@ class _GamePageState extends ConsumerState<GamePage> {
     GameState gameState,
     bool isDark,
   ) {
+    final theme = Theme.of(context);
+    final outlineStyle = OutlinedButton.styleFrom(
+      side: BorderSide(color: theme.colorScheme.outline),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+    );
     return Column(
       children: [
         _StatsBar(gameState: gameState, isDark: isDark),
@@ -192,6 +202,58 @@ class _GamePageState extends ConsumerState<GamePage> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400, maxHeight: 400),
                     child: const SudokuGrid(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: gameState.isPencilMode
+                            ? FilledButton.icon(
+                                onPressed: () => ref.read(gameNotifierProvider.notifier).togglePencilMode(),
+                                icon: const Text('✏️', style: TextStyle(fontSize: 13)),
+                                label: const Text('Pencil', style: TextStyle(fontSize: 11)),
+                                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
+                              )
+                            : OutlinedButton.icon(
+                                onPressed: () => ref.read(gameNotifierProvider.notifier).togglePencilMode(),
+                                icon: const Text('✏️', style: TextStyle(fontSize: 13)),
+                                label: const Text('Pencil', style: TextStyle(fontSize: 11)),
+                                style: outlineStyle,
+                              ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: gameState.hintsRemaining > 0
+                              ? () => ref.read(gameNotifierProvider.notifier).useHint()
+                              : null,
+                          icon: Text('💡', style: TextStyle(fontSize: 13, color: gameState.hintsRemaining > 0 ? Colors.amber : null)),
+                          label: Text('Hint (${gameState.hintsRemaining})', style: const TextStyle(fontSize: 11)),
+                          style: outlineStyle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => ref.read(gameNotifierProvider.notifier).eraseCell(),
+                          icon: const Text('🗑️', style: TextStyle(fontSize: 13)),
+                          label: const Text('Erase', style: TextStyle(fontSize: 11)),
+                          style: outlineStyle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showRefreshConfirmation(context, ref, gameState),
+                          icon: const Text('🔄', style: TextStyle(fontSize: 13)),
+                          label: const Text('New', style: TextStyle(fontSize: 11)),
+                          style: outlineStyle,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const Spacer(),
@@ -256,7 +318,7 @@ class _GamePageState extends ConsumerState<GamePage> {
               const SizedBox(height: 8),
               _SidebarButton(
                 label: gameState.isPencilMode ? 'Pencil ON' : 'Pencil',
-                icon: Icons.edit_outlined,
+                emoji: '✏️',
                 isSelected: gameState.isPencilMode,
                 onPressed: () => ref.read(gameNotifierProvider.notifier).togglePencilMode(),
               ),
@@ -270,10 +332,12 @@ class _GamePageState extends ConsumerState<GamePage> {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                icon: Icon(
-                  Icons.lightbulb_outline,
-                  size: 16,
-                  color: gameState.hintsRemaining > 0 ? Colors.amber : null,
+                icon: Text(
+                  '💡',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: gameState.hintsRemaining > 0 ? Colors.amber : null,
+                  ),
                 ),
                 label: Text('Hint (${gameState.hintsRemaining})'),
                 onPressed: gameState.hintsRemaining > 0
@@ -286,7 +350,7 @@ class _GamePageState extends ConsumerState<GamePage> {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                icon: const Icon(Icons.delete_outline, size: 16),
+                icon: const Text('🗑️', style: TextStyle(fontSize: 14)),
                 label: const Text('Erase'),
                 onPressed: () => ref.read(gameNotifierProvider.notifier).eraseCell(),
                 style: OutlinedButton.styleFrom(
@@ -296,7 +360,7 @@ class _GamePageState extends ConsumerState<GamePage> {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                icon: const Icon(Icons.refresh, size: 16),
+                icon: const Text('🔄', style: TextStyle(fontSize: 14)),
                 label: const Text('New Game'),
                 onPressed: () => _showRefreshConfirmation(context, ref, gameState),
                 style: OutlinedButton.styleFrom(
@@ -329,7 +393,7 @@ class _GamePageState extends ConsumerState<GamePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.timer_outlined, size: 14),
+                        const Text('⏱️', style: TextStyle(fontSize: 13)),
                         const SizedBox(width: 4),
                         Text(
                           '$minutes:$seconds',
@@ -341,7 +405,7 @@ class _GamePageState extends ConsumerState<GamePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 14, color: Colors.redAccent),
+                        const Text('⚠️', style: TextStyle(fontSize: 13)),
                         const SizedBox(width: 4),
                         Text(
                           '${gameState.mistakes}/${gameState.maxMistakes}',
@@ -360,7 +424,7 @@ class _GamePageState extends ConsumerState<GamePage> {
               const Divider(),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                icon: const Icon(Icons.sports_esports, size: 16),
+                icon: const Text('🎮', style: TextStyle(fontSize: 14)),
                 label: const Text('More Games', style: TextStyle(fontSize: 12)),
                 onPressed: () => showGamesHub(context),
               ),
@@ -388,7 +452,7 @@ class _GamePageState extends ConsumerState<GamePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.emoji_events, size: 80, color: Colors.amber)
+            const Text('🏆', style: TextStyle(fontSize: 80))
                 .animate()
                 .scale(duration: 600.ms, curve: Curves.elasticOut)
                 .rotate(begin: -0.1, end: 0, duration: 600.ms),
@@ -421,13 +485,13 @@ class _GamePageState extends ConsumerState<GamePage> {
 
 class _SidebarButton extends StatelessWidget {
   final String label;
-  final IconData? icon;
+  final String? emoji;
   final bool isSelected;
   final VoidCallback onPressed;
 
   const _SidebarButton({
     required this.label,
-    this.icon,
+    this.emoji,
     required this.isSelected,
     required this.onPressed,
   });
@@ -438,7 +502,7 @@ class _SidebarButton extends StatelessWidget {
     if (isSelected) {
       return FilledButton.icon(
         onPressed: null,
-        icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
+        icon: emoji != null ? Text(emoji!, style: const TextStyle(fontSize: 14)) : const SizedBox.shrink(),
         label: Text(label, style: const TextStyle(fontSize: 12)),
         style: FilledButton.styleFrom(
           disabledBackgroundColor: theme.colorScheme.primary,
@@ -449,7 +513,7 @@ class _SidebarButton extends StatelessWidget {
     }
     return OutlinedButton.icon(
       onPressed: onPressed,
-      icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
+      icon: emoji != null ? Text(emoji!, style: const TextStyle(fontSize: 14)) : const SizedBox.shrink(),
       label: Text(label, style: const TextStyle(fontSize: 12)),
       style: OutlinedButton.styleFrom(
         side: BorderSide(color: theme.colorScheme.outline),
@@ -478,7 +542,7 @@ class _StatsBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.timer_outlined, size: 18),
+              const Text('⏱️', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 6),
               Text(
                 '$minutes:$seconds',
@@ -488,7 +552,7 @@ class _StatsBar extends StatelessWidget {
           ),
           Row(
             children: [
-              const Icon(Icons.error_outline, size: 18, color: Colors.redAccent),
+              const Text('⚠️', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 6),
               Text(
                 'Mistakes: ${gameState.mistakes}/${gameState.maxMistakes}',
@@ -573,7 +637,7 @@ class _NumberPad extends ConsumerWidget {
                     const Positioned(
                       top: 2,
                       right: 2,
-                      child: Icon(Icons.check_circle, size: 10, color: Colors.green),
+                      child: Text('✓', style: TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.bold)),
                     ),
                 ],
               ),

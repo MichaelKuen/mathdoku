@@ -1,4 +1,4 @@
-// Copyright © FullStackShack. All rights reserved.
+// Copyright © App Verse Games. All rights reserved.
 // Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -49,15 +49,15 @@ class _GamesHubSheet extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
                 child: Row(
                   children: [
-                    Icon(Icons.sports_esports, color: theme.colorScheme.primary),
+                    const Text('🎮', style: TextStyle(fontSize: 22)),
                     const SizedBox(width: 12),
                     Text(
-                      'FullStackShack Games',
+                      'App Verse Games',
                       style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Text('✕', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -70,7 +70,7 @@ class _GamesHubSheet extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   children: const [
                     _GameCard(
-                      icon: Icons.grid_4x4,
+                      emoji: '🔢',
                       iconColor: Color(0xFFFF5252),
                       name: 'Sudoku',
                       tagline: 'Fill the grid with logic',
@@ -78,12 +78,12 @@ class _GamesHubSheet extends StatelessWidget {
                     ),
                     SizedBox(height: 12),
                     _GameCard(
-                      icon: Icons.close,
+                      emoji: '❌',
                       iconColor: Color(0xFF40C4FF),
                       name: 'Tic Tac Toe',
                       tagline: 'Classic X vs O showdown',
                       isPlaying: false,
-                      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.fullstackshack.tictactoe',
+                      playStoreUrl: 'https://play.google.com/store/apps/details?id=com.appversegames.tictactoe',
                     ),
                   ],
                 ),
@@ -97,11 +97,11 @@ class _GamesHubSheet extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        icon: const Icon(Icons.open_in_new, size: 16),
+                        icon: const Text('↗️', style: TextStyle(fontSize: 14)),
                         label: const Text('View all on Google Play'),
                         onPressed: () async {
                           final uri = Uri.parse(
-                            'https://play.google.com/store/apps/developer?id=FullStackShack',
+                            'https://play.google.com/store/apps/developer?id=AppVerseGames',
                           );
                           if (await canLaunchUrl(uri)) launchUrl(uri);
                         },
@@ -109,7 +109,7 @@ class _GamesHubSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Games shown here are FullStackShack originals.',
+                      'Games shown here are App Verse Games originals.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
@@ -145,7 +145,7 @@ class _GamesHubSheet extends StatelessWidget {
 }
 
 class _GameCard extends StatelessWidget {
-  final IconData icon;
+  final String emoji;
   final Color iconColor;
   final String name;
   final String tagline;
@@ -153,7 +153,7 @@ class _GameCard extends StatelessWidget {
   final String? playStoreUrl;
 
   const _GameCard({
-    required this.icon,
+    required this.emoji,
     required this.iconColor,
     required this.name,
     required this.tagline,
@@ -185,7 +185,7 @@ class _GameCard extends StatelessWidget {
               color: iconColor.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 28),
+            child: Text(emoji, style: const TextStyle(fontSize: 24)),
           ),
           const SizedBox(width: 14),
           Expanded(

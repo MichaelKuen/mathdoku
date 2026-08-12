@@ -8,7 +8,7 @@
 PRODUCT_NAME = sudoku
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.sudoku
+PRODUCT_BUNDLE_IDENTIFIER = com.appversegames.sudoku
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 App Verse Games. All rights reserved.
