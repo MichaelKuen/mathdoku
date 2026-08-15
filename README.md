@@ -24,7 +24,8 @@ highlighted cage of cells satisfies its arithmetic clue.
 - **Child-safe visuals** — bright pastel colours, large tap targets, rounded shapes,
   encouraging language, Google Fonts Nunito typeface
 - **Responsive layout** — adapts for mobile (portrait stacked) and wide screens such as
-  Windows and Chrome (grid + controls side-by-side, filling available space)
+  Windows and Chrome (grid + controls side-by-side, filling available space); action
+  buttons auto-scale their labels to always fit regardless of screen width
 - **Confetti win celebration** with animated trophy dialog
 
 ---

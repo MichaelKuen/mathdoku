@@ -45,6 +45,13 @@ All notable changes to Mathdoku are documented here.
 
 ## Post-release Fixes & Improvements
 
+### Action button text clipping fixed on Windows and Chrome
+The three action buttons (Hint, Notes, Erase) were being cut off on wide screens due to
+Material 3's default 24px horizontal button padding leaving too little room in narrow
+buttons. Fixed by reducing padding to 6px and wrapping each label in
+`FittedBox(fit: BoxFit.scaleDown)` so text auto-scales instead of clipping.
+"Notes ON" also shortened to "Notes ✓" to reduce its natural width.
+
 ### User-entered digit colour changed to green
 Correct digits entered by the player now appear in `Colors.green.shade700` instead of
 coral (kPrimary), making them clearly distinct from the red error state.
