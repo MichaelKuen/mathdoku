@@ -162,6 +162,7 @@ Create a @freezed class Cell with these fields:
   @Default(CellStatus.normal) CellStatus cageStatus  — whether this cell's cage is satisfied
   @Default(CellStatus.normal) CellStatus rowStatus
   @Default(CellStatus.normal) CellStatus colStatus
+  @Default(<int>[]) List<int> notes  — candidate digits written in pencil mode (empty = no notes)
 
 Include the freezed part directive and json_serializable fromJson factory.
 
@@ -211,6 +212,7 @@ Create a @freezed class GameState with:
   @Default(0) int mistakes
   int? selectedRow
   int? selectedCol
+  @Default(false) bool isPencilMode  — true when pencil/notes mode is active
 
 After writing all four files, run:
   dart run build_runner build --delete-conflicting-outputs
@@ -462,18 +464,35 @@ class GameNotifier extends _$GameNotifier {
       isSameNumber  = selectedValue != 0 && cell.value == selectedValue
     Rebuild board with updated cells.
 
+  void togglePencilMode():
+    state = state.copyWith(isPencilMode: !state.isPencilMode)
+
   void inputNumber(int number):
     Guard: status == playing, selectedRow/Col not null.
     Guard: cell.isFixed == false.
+
+    If state.isPencilMode:
+      Guard: cell.value == 0 (notes only go on empty cells).
+      Toggle the digit in cell.notes:
+        If notes contains number → remove it.
+        Else → add it.
+      Rebuild board with updated notes. Return early (no solution check).
+
+    Pen mode (normal):
     Lookup correct answer from board.getSolutionValue(row, col).
-    If number != correct: increment mistakes, set cell isError=true, keep value as the wrong number.
-    If number == correct: set cell value=number, isError=false.
+    If number != correct: increment mistakes, set cell isError=true.
+    If number == correct:
+      Set cell: value=number, isError=false, notes=[].
+      Auto-remove the placed digit from notes in all cells in the same row and column.
     Call _updateGroupStatuses() then _highlightCells(row, col).
     Check board.isComplete → status = won, cancel timer.
 
   void eraseCell():
     Guard: status == playing, selectedRow/Col not null, cell not fixed.
-    Set cell: value=0, isError=false.
+    If cell.value != 0:
+      Clear value only (set value=0, isError=false). Notes are preserved and become visible.
+    Else (already empty):
+      Clear notes (set notes=[]).
     Call _updateGroupStatuses() then _highlightCells(row, col).
 
   void useHint():
@@ -483,7 +502,7 @@ class GameNotifier extends _$GameNotifier {
       Use that as the target cell.
     If still no target found: return early.
     Get correctValue from solution.
-    Set cell: value=correctValue, isFixed=true, isError=false.
+    Set cell: value=correctValue, isFixed=true, isError=false, notes=[].
     Update selectedRow/selectedCol to point at the hinted cell (so it visually highlights).
     Call _updateGroupStatuses() then _highlightCells(row, col).
     Check board.isComplete → status = won, cancel timer.
@@ -608,6 +627,21 @@ const List<Color> kCageColors = [
   Color(0xFFE1F5FE), // pastel light-blue
 ];
 
+// Saturated border colours — one per cage, matched to kCageColors hues.
+// Use kCageBorderColors[cell.cageId % kCageBorderColors.length] for inter-cage borders.
+const List<Color> kCageBorderColors = [
+  Color(0xFFE57373), // red
+  Color(0xFF64B5F6), // blue
+  Color(0xFF81C784), // green
+  Color(0xFFFFD54F), // yellow
+  Color(0xFFBA68C8), // purple
+  Color(0xFF4DD0E1), // cyan
+  Color(0xFFFF8A65), // orange
+  Color(0xFFAED581), // lime
+  Color(0xFF7986CB), // indigo
+  Color(0xFF4FC3F7), // light-blue
+];
+
 === _MathdokuCell (ConsumerWidget) ===
 
 Parameters:
@@ -631,7 +665,10 @@ Border logic — for each of the 4 sides compute a BorderSide using _borderSide(
     if neighbor.cageId == cell.cageId:
       return BorderSide(width: 1.5, color: Colors.grey.shade500)  // same cage
     else:
-      return BorderSide(width: 3.5, color: Colors.black87)   // cage boundary
+      return BorderSide(   // cage boundary — each cage uses its own colour
+        width: 3.5,
+        color: kCageBorderColors[cell.cageId % kCageBorderColors.length],
+      )
 
   Apply:
     Border(
@@ -656,7 +693,16 @@ Cell content — use a Stack:
           ),
         )
 
-  Layer 2 (player digit, centred):
+  Layer 2 (pencil notes, shown when cell.value == 0 && cell.notes.isNotEmpty):
+    Positioned.fill → Padding(left:2, top: 18 if showClue else 4, right:2, bottom:4):
+      Column of two Expanded Rows:
+        Row 1: _NoteDigit(digit:1, notes:cell.notes)  _NoteDigit(digit:2, notes:cell.notes)
+        Row 2: _NoteDigit(digit:3, notes:cell.notes)  _NoteDigit(digit:4, notes:cell.notes)
+
+      _NoteDigit: Expanded → Center → Text(digit if in notes else '',
+        style: TextStyle(fontSize:11, fontWeight: bold, color: Colors.blueGrey.shade700))
+
+  Layer 3 (player digit, centred):
     If cell.value != 0:
       Center:
         Text(
@@ -723,22 +769,29 @@ To check if a digit is complete:
 
 === ActionRow (ConsumerWidget) ===
 
-A Row with two buttons taking equal width:
+Watch isPencilMode from gameNotifierProvider.
+
+A Row with THREE equal-width Expanded buttons, separated by SizedBox(width: 8):
 
 "💡 Hint" — ElevatedButton:
   backgroundColor: Color(0xFFFFD700) — gold
   foregroundColor: Colors.black87
-  fontSize: 18, height: 56, rounded corners 14
+  fontSize: 16, height: 56, rounded corners 14
   Always enabled (unlimited hints for children)
   On tap: ref.read(gameNotifierProvider.notifier).useHint()
 
+"✏️ Notes" / "✏️ Notes ON" — ElevatedButton (toggle):
+  backgroundColor: isPencilMode ? Colors.blueGrey.shade600 : Colors.blueGrey.shade100
+  foregroundColor: isPencilMode ? Colors.white : Colors.blueGrey.shade700
+  label: isPencilMode ? '✏️ Notes ON' : '✏️ Notes'
+  fontSize: 15, height: 56, rounded corners 14
+  On tap: ref.read(gameNotifierProvider.notifier).togglePencilMode()
+
 "🧹 Erase" — OutlinedButton:
   borderColor: Colors.grey.shade400
-  fontSize: 18, height: 56, rounded corners 14
+  fontSize: 16, height: 56, rounded corners 14
   On tap: ref.read(gameNotifierProvider.notifier).eraseCell()
-
-Separate the two buttons with SizedBox(width: 16).
-Each button uses Expanded so they fill the row equally.
+  Note: first press clears the placed digit (notes reappear); second press clears notes.
 ```
 
 ---
@@ -930,6 +983,36 @@ Container:
 
 formattedTime: '${(elapsedSeconds~/60).toString().padLeft(2,'0')}:${(elapsedSeconds%60).toString().padLeft(2,'0')}'
 
+=== Keyboard support ===
+
+Wrap the body Stack in:
+  Focus(focusNode: _focusNode, autofocus: true, onKeyEvent: _handleKeyEvent, child: Stack(...))
+
+Add FocusNode _focusNode to state; init in initState, dispose in dispose.
+
+_handleKeyEvent(FocusNode node, KeyEvent event) → KeyEventResult:
+  Only fire on KeyDownEvent or KeyRepeatEvent.
+  Guard: status must be playing.
+
+  Arrow keys (also fire on KeyRepeatEvent):
+    ArrowUp    → selectCell((curRow - 1).clamp(0,3), curCol)
+    ArrowDown  → selectCell((curRow + 1).clamp(0,3), curCol)
+    ArrowLeft  → selectCell(curRow, (curCol - 1).clamp(0,3))
+    ArrowRight → selectCell(curRow, (curCol + 1).clamp(0,3))
+  (If no cell selected, curRow/curCol default to 0.)
+
+  The following only fire on KeyDownEvent (not repeat):
+    1 / numpad1 → inputNumber(1)
+    2 / numpad2 → inputNumber(2)
+    3 / numpad3 → inputNumber(3)
+    4 / numpad4 → inputNumber(4)
+    Delete / Backspace → eraseCell()
+    H → useHint()
+    P → togglePencilMode()
+
+  Note: inputNumber() already respects isPencilMode, so the keyboard
+  automatically writes notes when pencil mode is active.
+
 === _showWinDialog ===
 
 showDialog, barrierDismissible: false.
@@ -1053,8 +1136,18 @@ Perform the following final checks and fix any issues found.
       If correct: shown in primary colour.
       If wrong: cell shakes, digit shown in red, "Oops" counter increments.
 
-   e. Tap "💡 Hint" with an empty cell selected → correct value fills in for free.
-      Tap "🧹 Erase" on a non-fixed cell → value is removed.
+   e. Tap "✏️ Notes" → button turns dark and shows "Notes ON".
+      Tap an empty cell, then tap digit buttons → small candidate numbers appear in a
+      2×2 mini-grid inside the cell. Tapping the same digit removes it.
+      Tap "✏️ Notes ON" again → returns to pen mode.
+      In pen mode, entering the correct digit clears the cell's notes and removes
+      that digit from notes in the same row and column.
+      Press P on the keyboard to toggle pencil mode without using the button.
+      First "🧹 Erase" press on a filled cell → clears the value (notes reappear).
+      Second press (cell now empty) → clears the notes.
+
+   f. Tap "💡 Hint" with an empty cell selected → correct value fills in for free.
+      Hint also clears any notes on the hinted cell.
 
    f. When all cells in a cage are correctly filled, the cage tints green.
       When a cage has an error, the cage tints orange.
@@ -1093,6 +1186,7 @@ Perform the following final checks and fix any issues found.
 | No box constraint | Mathdoku rule — only rows and columns must be unique, not 2×2 boxes |
 | Highlight row + column only (no box) | Correctly reflects Mathdoku rules; avoids misleading the player |
 | Solution-based error checking | Immediate gentle feedback helps children learn; avoids pure trial-and-error |
+| Pencil / notes mode | Players jot candidate digits (1–4) in a 2×2 mini-grid per cell; auto-cleared when the correct digit is placed in the same row/column |
 | Unlimited hints | Children learn by seeing answers; no frustration spiral |
 | Mandatory 10-min breaks | Screen-time hygiene; back-button blocked so it cannot be skipped |
 | Zero advertisements | Child safety; regulatory compliance (COPPA/GDPR-K) |
