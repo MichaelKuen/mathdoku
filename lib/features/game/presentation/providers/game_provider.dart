@@ -1,25 +1,25 @@
 // Copyright © App Verse Games. All rights reserved.
-// Unauthorised use, reproduction, or distribution is strictly prohibited.
 import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../domain/models/game_state.dart';
 import '../../domain/models/cell.dart';
+import '../../domain/models/game_state.dart';
 import '../../domain/repositories/puzzle_repository.dart';
 import '../../data/repositories/puzzle_repository_impl.dart';
-import '../../domain/logic/sudoku_engine.dart';
-import '../../domain/logic/sudoku_generator.dart';
+import '../../domain/logic/mathdoku_engine.dart';
+import '../../domain/logic/mathdoku_generator.dart';
 
 part 'game_provider.g.dart';
 
 @riverpod
-PuzzleRepository puzzleRepository(PuzzleRepositoryRef ref) {
-  return PuzzleRepositoryImpl();
-}
+PuzzleRepository puzzleRepository(PuzzleRepositoryRef ref) =>
+    PuzzleRepositoryImpl();
 
 @Riverpod(keepAlive: true)
 class GameNotifier extends _$GameNotifier {
-  final _engine = SudokuEngine();
-  final _generator = SudokuGenerator();
+  static const int _breakInterval = 600; // 10 minutes
+
+  final _engine = MathdokuEngine();
+  final _generator = MathdokuGenerator();
   Timer? _timer;
 
   @override
@@ -30,35 +30,46 @@ class GameNotifier extends _$GameNotifier {
 
   Future<void> startGame(Difficulty difficulty) async {
     state = state.copyWith(status: GameStatus.loading, difficulty: difficulty);
-    
+
     final board = _generator.generate(difficulty);
-    
+
     state = state.copyWith(
       board: board,
       status: GameStatus.playing,
       elapsedSeconds: 0,
+      playSecondsThisSegment: 0,
       mistakes: 0,
-      hintsRemaining: 3,
-      isPencilMode: false,
       selectedRow: null,
       selectedCol: null,
     );
-    
+
     _startTimer();
     _updateGroupStatuses();
   }
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
       if (state.status == GameStatus.playing) {
-        state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+        final next = state.playSecondsThisSegment + 1;
+        if (next >= _breakInterval) {
+          state = state.copyWith(
+            playSecondsThisSegment: next,
+            status: GameStatus.breakTime,
+          );
+        } else {
+          state = state.copyWith(playSecondsThisSegment: next);
+        }
       }
     });
   }
 
-  void togglePencilMode() {
-    state = state.copyWith(isPencilMode: !state.isPencilMode);
+  void acknowledgeBreak() {
+    state = state.copyWith(
+      playSecondsThisSegment: 0,
+      status: GameStatus.playing,
+    );
   }
 
   void selectCell(int row, int col) {
@@ -69,111 +80,70 @@ class GameNotifier extends _$GameNotifier {
 
   void _highlightCells(int row, int col) {
     if (state.board == null) return;
-    
-    final selectedCell = state.board!.getCell(row, col);
-    final selectedValue = selectedCell.value;
-    
+    final selectedValue = state.board!.getCell(row, col).value;
+
     final newCells = state.board!.cells.map<List<Cell>>((r) {
       return r.map<Cell>((cell) {
-        final isSelected = cell.row == row && cell.col == col;
-        final isHighlighted = cell.row == row || 
-                             cell.col == col || 
-                             (cell.row ~/ 3 == row ~/ 3 && cell.col ~/ 3 == col ~/ 3);
-        
-        // Number Scoping: Highlight other cells with same number
-        final isSameNumber = selectedValue != 0 && cell.value == selectedValue;
-        
         return cell.copyWith(
-          isSelected: isSelected, 
-          isHighlighted: isHighlighted,
-          isSameNumber: isSameNumber,
+          isSelected: cell.row == row && cell.col == col,
+          // Mathdoku: highlight row and column only — no box
+          isHighlighted: cell.row == row || cell.col == col,
+          isSameNumber: selectedValue != 0 && cell.value == selectedValue,
         );
       }).toList();
     }).toList();
-    
+
     state = state.copyWith(board: state.board!.copyWith(cells: newCells));
   }
 
   void inputNumber(int number) {
-    if (state.status != GameStatus.playing || 
-        state.selectedRow == null || 
-        state.selectedCol == null) {
-      return;
-    }
+    if (state.status != GameStatus.playing ||
+        state.selectedRow == null ||
+        state.selectedCol == null) { return; }
 
     final row = state.selectedRow!;
     final col = state.selectedCol!;
     final cell = state.board!.getCell(row, col);
+    if (cell.isFixed) { return; }
 
-    if (cell.isFixed) return;
+    final correct = state.board!.getSolutionValue(row, col);
+    final isCorrect = number == correct;
 
-    if (state.isPencilMode) {
-      if (cell.value != 0) return; // Can't add notes to a filled cell
-      
-      final newNotes = Set<int>.from(cell.notes);
-      if (newNotes.contains(number)) {
-        newNotes.remove(number);
-      } else {
-        newNotes.add(number);
-      }
-
-      final newCells = state.board!.cells.map<List<Cell>>((r) {
-        return r.map<Cell>((c) {
-          if (c.row == row && c.col == col) {
-            return c.copyWith(notes: newNotes);
-          }
-          return c;
-        }).toList();
-      }).toList();
-
-      state = state.copyWith(board: state.board!.copyWith(cells: newCells));
-    } else {
-      if (cell.value == number) return;
-
-      final correctValue = state.board!.getSolutionValue(row, col);
-      final isCorrect = number == correctValue;
-      
-      if (!isCorrect) {
-        state = state.copyWith(mistakes: state.mistakes + 1);
-      }
-
-      final newCells = state.board!.cells.map<List<Cell>>((r) {
-        return r.map<Cell>((c) {
-          if (c.row == row && c.col == col) {
-            return c.copyWith(value: number, isError: !isCorrect, notes: {});
-          }
-          return c;
-        }).toList();
-      }).toList();
-
-      state = state.copyWith(board: state.board!.copyWith(cells: newCells));
-      _updateGroupStatuses();
-      _highlightCells(row, col); // Refresh highlighting for number scoping
-
-      if (state.board!.isComplete) {
-        state = state.copyWith(status: GameStatus.won);
-        _timer?.cancel();
-      }
-    }
-  }
-
-  void eraseCell() {
-    if (state.status != GameStatus.playing || 
-        state.selectedRow == null || 
-        state.selectedCol == null) {
-      return;
-    }
-
-    final row = state.selectedRow!;
-    final col = state.selectedCol!;
-    final cell = state.board!.getCell(row, col);
-
-    if (cell.isFixed) return;
+    if (!isCorrect) { state = state.copyWith(mistakes: state.mistakes + 1); }
 
     final newCells = state.board!.cells.map<List<Cell>>((r) {
       return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
-          return c.copyWith(value: 0, isError: false, notes: {});
+          return c.copyWith(value: number, isError: !isCorrect);
+        }
+        return c;
+      }).toList();
+    }).toList();
+
+    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+    _updateGroupStatuses();
+    _highlightCells(row, col);
+
+    if (state.board!.isComplete) {
+      state = state.copyWith(status: GameStatus.won);
+      _timer?.cancel();
+    }
+  }
+
+  void eraseCell() {
+    if (state.status != GameStatus.playing ||
+        state.selectedRow == null ||
+        state.selectedCol == null) { return; }
+
+    final row = state.selectedRow!;
+    final col = state.selectedCol!;
+    final cell = state.board!.getCell(row, col);
+    if (cell.isFixed) { return; }
+
+    final newCells = state.board!.cells.map<List<Cell>>((r) {
+      return r.map<Cell>((c) {
+        if (c.row == row && c.col == col) {
+          return c.copyWith(value: 0, isError: false);
         }
         return c;
       }).toList();
@@ -185,40 +155,27 @@ class GameNotifier extends _$GameNotifier {
   }
 
   void useHint() {
-    if (state.status != GameStatus.playing || 
-        state.selectedRow == null || 
-        state.selectedCol == null ||
-        state.hintsRemaining <= 0) {
-      return;
-    }
+    if (state.status != GameStatus.playing ||
+        state.selectedRow == null ||
+        state.selectedCol == null) { return; }
 
     final row = state.selectedRow!;
     final col = state.selectedCol!;
     final cell = state.board!.getCell(row, col);
-
-    if (cell.isFixed) return;
+    if (cell.isFixed) { return; }
 
     final correctValue = state.board!.getSolutionValue(row, col);
 
     final newCells = state.board!.cells.map<List<Cell>>((r) {
       return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
-          return c.copyWith(
-            value: correctValue, 
-            isError: false,
-            isFixed: true, 
-            notes: {},
-          );
+          return c.copyWith(value: correctValue, isError: false, isFixed: true);
         }
         return c;
       }).toList();
     }).toList();
 
-    state = state.copyWith(
-      board: state.board!.copyWith(cells: newCells),
-      hintsRemaining: state.hintsRemaining - 1,
-    );
-    
+    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
     _updateGroupStatuses();
     _highlightCells(row, col);
 
@@ -230,61 +187,42 @@ class GameNotifier extends _$GameNotifier {
 
   void _updateGroupStatuses() {
     if (state.board == null) return;
-    
+
     final board = state.board!;
-    List<List<Cell>> newCells = board.cells.map((r) => r.toList()).toList();
+    final newCells = board.cells.map((r) => r.toList()).toList();
 
-    final isEasy = state.difficulty == Difficulty.easy;
-
-    for (int rowBlock = 0; rowBlock < 3; rowBlock++) {
-      for (int colBlock = 0; colBlock < 3; colBlock++) {
-        final block = _engine.getBlock(board, rowBlock, colBlock);
-        final status = _engine.checkGroupStatus(block);
-        final cellStatus = _toCellStatus(status);
-
-        for (int r = 0; r < 3; r++) {
-          for (int c = 0; c < 3; c++) {
-            int tr = rowBlock * 3 + r;
-            int tc = colBlock * 3 + c;
-            newCells[tr][tc] = newCells[tr][tc].copyWith(blockStatus: cellStatus);
-          }
-        }
+    // Row statuses
+    for (int r = 0; r < 4; r++) {
+      final status = _toCellStatus(_engine.checkGroupStatus(board.cells[r]));
+      for (int c = 0; c < 4; c++) {
+        newCells[r][c] = newCells[r][c].copyWith(rowStatus: status);
       }
     }
 
-    if (isEasy) {
-      for (int r = 0; r < 9; r++) {
-        final row = board.cells[r];
-        final status = _engine.checkGroupStatus(row);
-        final cellStatus = _toCellStatus(status);
-        for (int c = 0; c < 9; c++) {
-          newCells[r][c] = newCells[r][c].copyWith(rowStatus: cellStatus);
-        }
+    // Column statuses
+    for (int c = 0; c < 4; c++) {
+      final col = [for (int r = 0; r < 4; r++) board.cells[r][c]];
+      final status = _toCellStatus(_engine.checkGroupStatus(col));
+      for (int r = 0; r < 4; r++) {
+        newCells[r][c] = newCells[r][c].copyWith(colStatus: status);
       }
+    }
 
-      for (int c = 0; c < 9; c++) {
-        List<Cell> column = [];
-        for (int r = 0; r < 9; r++) {
-          column.add(board.cells[r][c]);
-        }
-        final status = _engine.checkGroupStatus(column);
-        final cellStatus = _toCellStatus(status);
-        for (int r = 0; r < 9; r++) {
-          newCells[r][c] = newCells[r][c].copyWith(colStatus: cellStatus);
-        }
+    // Cage statuses (using original board values, before status updates)
+    for (final cage in board.cages) {
+      final cageStatus = _engine.cageStatusForCell(cage, board);
+      for (final pos in cage.cells) {
+        newCells[pos.row][pos.col] =
+            newCells[pos.row][pos.col].copyWith(cageStatus: cageStatus);
       }
     }
 
     state = state.copyWith(board: board.copyWith(cells: newCells));
   }
 
-  CellStatus _toCellStatus(GroupStatus status) {
-    if (status == GroupStatus.correct) {
-      return CellStatus.correct;
-    }
-    if (status == GroupStatus.incorrect) {
-      return CellStatus.incorrect;
-    }
-    return CellStatus.normal;
-  }
+  CellStatus _toCellStatus(GroupStatus s) => switch (s) {
+        GroupStatus.correct => CellStatus.correct,
+        GroupStatus.incorrect => CellStatus.incorrect,
+        GroupStatus.incomplete => CellStatus.normal,
+      };
 }

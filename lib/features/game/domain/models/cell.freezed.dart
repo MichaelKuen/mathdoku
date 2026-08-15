@@ -12,8 +12,7 @@ part of 'cell.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 Cell _$CellFromJson(Map<String, dynamic> json) {
   return _Cell.fromJson(json);
@@ -24,15 +23,17 @@ mixin _$Cell {
   int get value => throw _privateConstructorUsedError;
   int get row => throw _privateConstructorUsedError;
   int get col => throw _privateConstructorUsedError;
+  int get cageId => throw _privateConstructorUsedError;
   bool get isFixed => throw _privateConstructorUsedError;
   bool get isSelected => throw _privateConstructorUsedError;
   bool get isHighlighted => throw _privateConstructorUsedError;
   bool get isSameNumber => throw _privateConstructorUsedError;
   bool get isError => throw _privateConstructorUsedError;
-  CellStatus get blockStatus => throw _privateConstructorUsedError;
+  bool get showClue => throw _privateConstructorUsedError;
+  String get clueText => throw _privateConstructorUsedError;
+  CellStatus get cageStatus => throw _privateConstructorUsedError;
   CellStatus get rowStatus => throw _privateConstructorUsedError;
   CellStatus get colStatus => throw _privateConstructorUsedError;
-  Set<int> get notes => throw _privateConstructorUsedError;
 
   /// Serializes this Cell to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,20 +49,21 @@ abstract class $CellCopyWith<$Res> {
   factory $CellCopyWith(Cell value, $Res Function(Cell) then) =
       _$CellCopyWithImpl<$Res, Cell>;
   @useResult
-  $Res call({
-    int value,
-    int row,
-    int col,
-    bool isFixed,
-    bool isSelected,
-    bool isHighlighted,
-    bool isSameNumber,
-    bool isError,
-    CellStatus blockStatus,
-    CellStatus rowStatus,
-    CellStatus colStatus,
-    Set<int> notes,
-  });
+  $Res call(
+      {int value,
+      int row,
+      int col,
+      int cageId,
+      bool isFixed,
+      bool isSelected,
+      bool isHighlighted,
+      bool isSameNumber,
+      bool isError,
+      bool showClue,
+      String clueText,
+      CellStatus cageStatus,
+      CellStatus rowStatus,
+      CellStatus colStatus});
 }
 
 /// @nodoc
@@ -82,94 +84,101 @@ class _$CellCopyWithImpl<$Res, $Val extends Cell>
     Object? value = null,
     Object? row = null,
     Object? col = null,
+    Object? cageId = null,
     Object? isFixed = null,
     Object? isSelected = null,
     Object? isHighlighted = null,
     Object? isSameNumber = null,
     Object? isError = null,
-    Object? blockStatus = null,
+    Object? showClue = null,
+    Object? clueText = null,
+    Object? cageStatus = null,
     Object? rowStatus = null,
     Object? colStatus = null,
-    Object? notes = null,
   }) {
-    return _then(
-      _value.copyWith(
-            value: null == value
-                ? _value.value
-                : value // ignore: cast_nullable_to_non_nullable
-                      as int,
-            row: null == row
-                ? _value.row
-                : row // ignore: cast_nullable_to_non_nullable
-                      as int,
-            col: null == col
-                ? _value.col
-                : col // ignore: cast_nullable_to_non_nullable
-                      as int,
-            isFixed: null == isFixed
-                ? _value.isFixed
-                : isFixed // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            isSelected: null == isSelected
-                ? _value.isSelected
-                : isSelected // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            isHighlighted: null == isHighlighted
-                ? _value.isHighlighted
-                : isHighlighted // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            isSameNumber: null == isSameNumber
-                ? _value.isSameNumber
-                : isSameNumber // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            isError: null == isError
-                ? _value.isError
-                : isError // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            blockStatus: null == blockStatus
-                ? _value.blockStatus
-                : blockStatus // ignore: cast_nullable_to_non_nullable
-                      as CellStatus,
-            rowStatus: null == rowStatus
-                ? _value.rowStatus
-                : rowStatus // ignore: cast_nullable_to_non_nullable
-                      as CellStatus,
-            colStatus: null == colStatus
-                ? _value.colStatus
-                : colStatus // ignore: cast_nullable_to_non_nullable
-                      as CellStatus,
-            notes: null == notes
-                ? _value.notes
-                : notes // ignore: cast_nullable_to_non_nullable
-                      as Set<int>,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      value: null == value
+          ? _value.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as int,
+      row: null == row
+          ? _value.row
+          : row // ignore: cast_nullable_to_non_nullable
+              as int,
+      col: null == col
+          ? _value.col
+          : col // ignore: cast_nullable_to_non_nullable
+              as int,
+      cageId: null == cageId
+          ? _value.cageId
+          : cageId // ignore: cast_nullable_to_non_nullable
+              as int,
+      isFixed: null == isFixed
+          ? _value.isFixed
+          : isFixed // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSelected: null == isSelected
+          ? _value.isSelected
+          : isSelected // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isHighlighted: null == isHighlighted
+          ? _value.isHighlighted
+          : isHighlighted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSameNumber: null == isSameNumber
+          ? _value.isSameNumber
+          : isSameNumber // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isError: null == isError
+          ? _value.isError
+          : isError // ignore: cast_nullable_to_non_nullable
+              as bool,
+      showClue: null == showClue
+          ? _value.showClue
+          : showClue // ignore: cast_nullable_to_non_nullable
+              as bool,
+      clueText: null == clueText
+          ? _value.clueText
+          : clueText // ignore: cast_nullable_to_non_nullable
+              as String,
+      cageStatus: null == cageStatus
+          ? _value.cageStatus
+          : cageStatus // ignore: cast_nullable_to_non_nullable
+              as CellStatus,
+      rowStatus: null == rowStatus
+          ? _value.rowStatus
+          : rowStatus // ignore: cast_nullable_to_non_nullable
+              as CellStatus,
+      colStatus: null == colStatus
+          ? _value.colStatus
+          : colStatus // ignore: cast_nullable_to_non_nullable
+              as CellStatus,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$CellImplCopyWith<$Res> implements $CellCopyWith<$Res> {
   factory _$$CellImplCopyWith(
-    _$CellImpl value,
-    $Res Function(_$CellImpl) then,
-  ) = __$$CellImplCopyWithImpl<$Res>;
+          _$CellImpl value, $Res Function(_$CellImpl) then) =
+      __$$CellImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int value,
-    int row,
-    int col,
-    bool isFixed,
-    bool isSelected,
-    bool isHighlighted,
-    bool isSameNumber,
-    bool isError,
-    CellStatus blockStatus,
-    CellStatus rowStatus,
-    CellStatus colStatus,
-    Set<int> notes,
-  });
+  $Res call(
+      {int value,
+      int row,
+      int col,
+      int cageId,
+      bool isFixed,
+      bool isSelected,
+      bool isHighlighted,
+      bool isSameNumber,
+      bool isError,
+      bool showClue,
+      String clueText,
+      CellStatus cageStatus,
+      CellStatus rowStatus,
+      CellStatus colStatus});
 }
 
 /// @nodoc
@@ -177,7 +186,7 @@ class __$$CellImplCopyWithImpl<$Res>
     extends _$CellCopyWithImpl<$Res, _$CellImpl>
     implements _$$CellImplCopyWith<$Res> {
   __$$CellImplCopyWithImpl(_$CellImpl _value, $Res Function(_$CellImpl) _then)
-    : super(_value, _then);
+      : super(_value, _then);
 
   /// Create a copy of Cell
   /// with the given fields replaced by the non-null parameter values.
@@ -187,88 +196,97 @@ class __$$CellImplCopyWithImpl<$Res>
     Object? value = null,
     Object? row = null,
     Object? col = null,
+    Object? cageId = null,
     Object? isFixed = null,
     Object? isSelected = null,
     Object? isHighlighted = null,
     Object? isSameNumber = null,
     Object? isError = null,
-    Object? blockStatus = null,
+    Object? showClue = null,
+    Object? clueText = null,
+    Object? cageStatus = null,
     Object? rowStatus = null,
     Object? colStatus = null,
-    Object? notes = null,
   }) {
-    return _then(
-      _$CellImpl(
-        value: null == value
-            ? _value.value
-            : value // ignore: cast_nullable_to_non_nullable
-                  as int,
-        row: null == row
-            ? _value.row
-            : row // ignore: cast_nullable_to_non_nullable
-                  as int,
-        col: null == col
-            ? _value.col
-            : col // ignore: cast_nullable_to_non_nullable
-                  as int,
-        isFixed: null == isFixed
-            ? _value.isFixed
-            : isFixed // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        isSelected: null == isSelected
-            ? _value.isSelected
-            : isSelected // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        isHighlighted: null == isHighlighted
-            ? _value.isHighlighted
-            : isHighlighted // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        isSameNumber: null == isSameNumber
-            ? _value.isSameNumber
-            : isSameNumber // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        isError: null == isError
-            ? _value.isError
-            : isError // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        blockStatus: null == blockStatus
-            ? _value.blockStatus
-            : blockStatus // ignore: cast_nullable_to_non_nullable
-                  as CellStatus,
-        rowStatus: null == rowStatus
-            ? _value.rowStatus
-            : rowStatus // ignore: cast_nullable_to_non_nullable
-                  as CellStatus,
-        colStatus: null == colStatus
-            ? _value.colStatus
-            : colStatus // ignore: cast_nullable_to_non_nullable
-                  as CellStatus,
-        notes: null == notes
-            ? _value._notes
-            : notes // ignore: cast_nullable_to_non_nullable
-                  as Set<int>,
-      ),
-    );
+    return _then(_$CellImpl(
+      value: null == value
+          ? _value.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as int,
+      row: null == row
+          ? _value.row
+          : row // ignore: cast_nullable_to_non_nullable
+              as int,
+      col: null == col
+          ? _value.col
+          : col // ignore: cast_nullable_to_non_nullable
+              as int,
+      cageId: null == cageId
+          ? _value.cageId
+          : cageId // ignore: cast_nullable_to_non_nullable
+              as int,
+      isFixed: null == isFixed
+          ? _value.isFixed
+          : isFixed // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSelected: null == isSelected
+          ? _value.isSelected
+          : isSelected // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isHighlighted: null == isHighlighted
+          ? _value.isHighlighted
+          : isHighlighted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSameNumber: null == isSameNumber
+          ? _value.isSameNumber
+          : isSameNumber // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isError: null == isError
+          ? _value.isError
+          : isError // ignore: cast_nullable_to_non_nullable
+              as bool,
+      showClue: null == showClue
+          ? _value.showClue
+          : showClue // ignore: cast_nullable_to_non_nullable
+              as bool,
+      clueText: null == clueText
+          ? _value.clueText
+          : clueText // ignore: cast_nullable_to_non_nullable
+              as String,
+      cageStatus: null == cageStatus
+          ? _value.cageStatus
+          : cageStatus // ignore: cast_nullable_to_non_nullable
+              as CellStatus,
+      rowStatus: null == rowStatus
+          ? _value.rowStatus
+          : rowStatus // ignore: cast_nullable_to_non_nullable
+              as CellStatus,
+      colStatus: null == colStatus
+          ? _value.colStatus
+          : colStatus // ignore: cast_nullable_to_non_nullable
+              as CellStatus,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$CellImpl implements _Cell {
-  const _$CellImpl({
-    required this.value,
-    required this.row,
-    required this.col,
-    this.isFixed = false,
-    this.isSelected = false,
-    this.isHighlighted = false,
-    this.isSameNumber = false,
-    this.isError = false,
-    this.blockStatus = CellStatus.normal,
-    this.rowStatus = CellStatus.normal,
-    this.colStatus = CellStatus.normal,
-    final Set<int> notes = const {},
-  }) : _notes = notes;
+  const _$CellImpl(
+      {required this.value,
+      required this.row,
+      required this.col,
+      required this.cageId,
+      this.isFixed = false,
+      this.isSelected = false,
+      this.isHighlighted = false,
+      this.isSameNumber = false,
+      this.isError = false,
+      this.showClue = false,
+      this.clueText = '',
+      this.cageStatus = CellStatus.normal,
+      this.rowStatus = CellStatus.normal,
+      this.colStatus = CellStatus.normal});
 
   factory _$CellImpl.fromJson(Map<String, dynamic> json) =>
       _$$CellImplFromJson(json);
@@ -279,6 +297,8 @@ class _$CellImpl implements _Cell {
   final int row;
   @override
   final int col;
+  @override
+  final int cageId;
   @override
   @JsonKey()
   final bool isFixed;
@@ -296,25 +316,23 @@ class _$CellImpl implements _Cell {
   final bool isError;
   @override
   @JsonKey()
-  final CellStatus blockStatus;
+  final bool showClue;
+  @override
+  @JsonKey()
+  final String clueText;
+  @override
+  @JsonKey()
+  final CellStatus cageStatus;
   @override
   @JsonKey()
   final CellStatus rowStatus;
   @override
   @JsonKey()
   final CellStatus colStatus;
-  final Set<int> _notes;
-  @override
-  @JsonKey()
-  Set<int> get notes {
-    if (_notes is EqualUnmodifiableSetView) return _notes;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableSetView(_notes);
-  }
 
   @override
   String toString() {
-    return 'Cell(value: $value, row: $row, col: $col, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isSameNumber: $isSameNumber, isError: $isError, blockStatus: $blockStatus, rowStatus: $rowStatus, colStatus: $colStatus, notes: $notes)';
+    return 'Cell(value: $value, row: $row, col: $col, cageId: $cageId, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isSameNumber: $isSameNumber, isError: $isError, showClue: $showClue, clueText: $clueText, cageStatus: $cageStatus, rowStatus: $rowStatus, colStatus: $colStatus)';
   }
 
   @override
@@ -325,6 +343,7 @@ class _$CellImpl implements _Cell {
             (identical(other.value, value) || other.value == value) &&
             (identical(other.row, row) || other.row == row) &&
             (identical(other.col, col) || other.col == col) &&
+            (identical(other.cageId, cageId) || other.cageId == cageId) &&
             (identical(other.isFixed, isFixed) || other.isFixed == isFixed) &&
             (identical(other.isSelected, isSelected) ||
                 other.isSelected == isSelected) &&
@@ -333,32 +352,36 @@ class _$CellImpl implements _Cell {
             (identical(other.isSameNumber, isSameNumber) ||
                 other.isSameNumber == isSameNumber) &&
             (identical(other.isError, isError) || other.isError == isError) &&
-            (identical(other.blockStatus, blockStatus) ||
-                other.blockStatus == blockStatus) &&
+            (identical(other.showClue, showClue) ||
+                other.showClue == showClue) &&
+            (identical(other.clueText, clueText) ||
+                other.clueText == clueText) &&
+            (identical(other.cageStatus, cageStatus) ||
+                other.cageStatus == cageStatus) &&
             (identical(other.rowStatus, rowStatus) ||
                 other.rowStatus == rowStatus) &&
             (identical(other.colStatus, colStatus) ||
-                other.colStatus == colStatus) &&
-            const DeepCollectionEquality().equals(other._notes, _notes));
+                other.colStatus == colStatus));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    value,
-    row,
-    col,
-    isFixed,
-    isSelected,
-    isHighlighted,
-    isSameNumber,
-    isError,
-    blockStatus,
-    rowStatus,
-    colStatus,
-    const DeepCollectionEquality().hash(_notes),
-  );
+      runtimeType,
+      value,
+      row,
+      col,
+      cageId,
+      isFixed,
+      isSelected,
+      isHighlighted,
+      isSameNumber,
+      isError,
+      showClue,
+      clueText,
+      cageStatus,
+      rowStatus,
+      colStatus);
 
   /// Create a copy of Cell
   /// with the given fields replaced by the non-null parameter values.
@@ -370,25 +393,28 @@ class _$CellImpl implements _Cell {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$CellImplToJson(this);
+    return _$$CellImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _Cell implements Cell {
-  const factory _Cell({
-    required final int value,
-    required final int row,
-    required final int col,
-    final bool isFixed,
-    final bool isSelected,
-    final bool isHighlighted,
-    final bool isSameNumber,
-    final bool isError,
-    final CellStatus blockStatus,
-    final CellStatus rowStatus,
-    final CellStatus colStatus,
-    final Set<int> notes,
-  }) = _$CellImpl;
+  const factory _Cell(
+      {required final int value,
+      required final int row,
+      required final int col,
+      required final int cageId,
+      final bool isFixed,
+      final bool isSelected,
+      final bool isHighlighted,
+      final bool isSameNumber,
+      final bool isError,
+      final bool showClue,
+      final String clueText,
+      final CellStatus cageStatus,
+      final CellStatus rowStatus,
+      final CellStatus colStatus}) = _$CellImpl;
 
   factory _Cell.fromJson(Map<String, dynamic> json) = _$CellImpl.fromJson;
 
@@ -398,6 +424,8 @@ abstract class _Cell implements Cell {
   int get row;
   @override
   int get col;
+  @override
+  int get cageId;
   @override
   bool get isFixed;
   @override
@@ -409,13 +437,15 @@ abstract class _Cell implements Cell {
   @override
   bool get isError;
   @override
-  CellStatus get blockStatus;
+  bool get showClue;
+  @override
+  String get clueText;
+  @override
+  CellStatus get cageStatus;
   @override
   CellStatus get rowStatus;
   @override
   CellStatus get colStatus;
-  @override
-  Set<int> get notes;
 
   /// Create a copy of Cell
   /// with the given fields replaced by the non-null parameter values.

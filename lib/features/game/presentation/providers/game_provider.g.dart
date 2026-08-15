@@ -6,7 +6,7 @@ part of 'game_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$puzzleRepositoryHash() => r'22e6d285bdb1e1bc87c9a35b24473ff9086b34f1';
+String _$puzzleRepositoryHash() => r'88330e43ace6201160cf44f8ddf8853bfefe7114';
 
 /// See also [puzzleRepository].
 @ProviderFor(puzzleRepository)
@@ -23,16 +23,15 @@ final puzzleRepositoryProvider = AutoDisposeProvider<PuzzleRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef PuzzleRepositoryRef = AutoDisposeProviderRef<PuzzleRepository>;
-String _$gameNotifierHash() => r'dc170410a7fe9cab3c639f534555d4d6edfdae53';
+String _$gameNotifierHash() => r'1b8984e2cc8b421dbc056e9ff06a81b871952298';
 
 /// See also [GameNotifier].
 @ProviderFor(GameNotifier)
 final gameNotifierProvider = NotifierProvider<GameNotifier, GameState>.internal(
   GameNotifier.new,
   name: r'gameNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$gameNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$gameNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

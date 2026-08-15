@@ -12,8 +12,7 @@ part of 'game_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$GameState {
@@ -21,10 +20,8 @@ mixin _$GameState {
   GameStatus get status => throw _privateConstructorUsedError;
   Difficulty get difficulty => throw _privateConstructorUsedError;
   int get elapsedSeconds => throw _privateConstructorUsedError;
+  int get playSecondsThisSegment => throw _privateConstructorUsedError;
   int get mistakes => throw _privateConstructorUsedError;
-  int get maxMistakes => throw _privateConstructorUsedError;
-  int get hintsRemaining => throw _privateConstructorUsedError;
-  bool get isPencilMode => throw _privateConstructorUsedError;
   int? get selectedRow => throw _privateConstructorUsedError;
   int? get selectedCol => throw _privateConstructorUsedError;
 
@@ -40,18 +37,15 @@ abstract class $GameStateCopyWith<$Res> {
   factory $GameStateCopyWith(GameState value, $Res Function(GameState) then) =
       _$GameStateCopyWithImpl<$Res, GameState>;
   @useResult
-  $Res call({
-    Board? board,
-    GameStatus status,
-    Difficulty difficulty,
-    int elapsedSeconds,
-    int mistakes,
-    int maxMistakes,
-    int hintsRemaining,
-    bool isPencilMode,
-    int? selectedRow,
-    int? selectedCol,
-  });
+  $Res call(
+      {Board? board,
+      GameStatus status,
+      Difficulty difficulty,
+      int elapsedSeconds,
+      int playSecondsThisSegment,
+      int mistakes,
+      int? selectedRow,
+      int? selectedCol});
 
   $BoardCopyWith<$Res>? get board;
 }
@@ -75,58 +69,45 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
     Object? status = null,
     Object? difficulty = null,
     Object? elapsedSeconds = null,
+    Object? playSecondsThisSegment = null,
     Object? mistakes = null,
-    Object? maxMistakes = null,
-    Object? hintsRemaining = null,
-    Object? isPencilMode = null,
     Object? selectedRow = freezed,
     Object? selectedCol = freezed,
   }) {
-    return _then(
-      _value.copyWith(
-            board: freezed == board
-                ? _value.board
-                : board // ignore: cast_nullable_to_non_nullable
-                      as Board?,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as GameStatus,
-            difficulty: null == difficulty
-                ? _value.difficulty
-                : difficulty // ignore: cast_nullable_to_non_nullable
-                      as Difficulty,
-            elapsedSeconds: null == elapsedSeconds
-                ? _value.elapsedSeconds
-                : elapsedSeconds // ignore: cast_nullable_to_non_nullable
-                      as int,
-            mistakes: null == mistakes
-                ? _value.mistakes
-                : mistakes // ignore: cast_nullable_to_non_nullable
-                      as int,
-            maxMistakes: null == maxMistakes
-                ? _value.maxMistakes
-                : maxMistakes // ignore: cast_nullable_to_non_nullable
-                      as int,
-            hintsRemaining: null == hintsRemaining
-                ? _value.hintsRemaining
-                : hintsRemaining // ignore: cast_nullable_to_non_nullable
-                      as int,
-            isPencilMode: null == isPencilMode
-                ? _value.isPencilMode
-                : isPencilMode // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            selectedRow: freezed == selectedRow
-                ? _value.selectedRow
-                : selectedRow // ignore: cast_nullable_to_non_nullable
-                      as int?,
-            selectedCol: freezed == selectedCol
-                ? _value.selectedCol
-                : selectedCol // ignore: cast_nullable_to_non_nullable
-                      as int?,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      board: freezed == board
+          ? _value.board
+          : board // ignore: cast_nullable_to_non_nullable
+              as Board?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as GameStatus,
+      difficulty: null == difficulty
+          ? _value.difficulty
+          : difficulty // ignore: cast_nullable_to_non_nullable
+              as Difficulty,
+      elapsedSeconds: null == elapsedSeconds
+          ? _value.elapsedSeconds
+          : elapsedSeconds // ignore: cast_nullable_to_non_nullable
+              as int,
+      playSecondsThisSegment: null == playSecondsThisSegment
+          ? _value.playSecondsThisSegment
+          : playSecondsThisSegment // ignore: cast_nullable_to_non_nullable
+              as int,
+      mistakes: null == mistakes
+          ? _value.mistakes
+          : mistakes // ignore: cast_nullable_to_non_nullable
+              as int,
+      selectedRow: freezed == selectedRow
+          ? _value.selectedRow
+          : selectedRow // ignore: cast_nullable_to_non_nullable
+              as int?,
+      selectedCol: freezed == selectedCol
+          ? _value.selectedCol
+          : selectedCol // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ) as $Val);
   }
 
   /// Create a copy of GameState
@@ -148,23 +129,19 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
 abstract class _$$GameStateImplCopyWith<$Res>
     implements $GameStateCopyWith<$Res> {
   factory _$$GameStateImplCopyWith(
-    _$GameStateImpl value,
-    $Res Function(_$GameStateImpl) then,
-  ) = __$$GameStateImplCopyWithImpl<$Res>;
+          _$GameStateImpl value, $Res Function(_$GameStateImpl) then) =
+      __$$GameStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    Board? board,
-    GameStatus status,
-    Difficulty difficulty,
-    int elapsedSeconds,
-    int mistakes,
-    int maxMistakes,
-    int hintsRemaining,
-    bool isPencilMode,
-    int? selectedRow,
-    int? selectedCol,
-  });
+  $Res call(
+      {Board? board,
+      GameStatus status,
+      Difficulty difficulty,
+      int elapsedSeconds,
+      int playSecondsThisSegment,
+      int mistakes,
+      int? selectedRow,
+      int? selectedCol});
 
   @override
   $BoardCopyWith<$Res>? get board;
@@ -175,9 +152,8 @@ class __$$GameStateImplCopyWithImpl<$Res>
     extends _$GameStateCopyWithImpl<$Res, _$GameStateImpl>
     implements _$$GameStateImplCopyWith<$Res> {
   __$$GameStateImplCopyWithImpl(
-    _$GameStateImpl _value,
-    $Res Function(_$GameStateImpl) _then,
-  ) : super(_value, _then);
+      _$GameStateImpl _value, $Res Function(_$GameStateImpl) _then)
+      : super(_value, _then);
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.
@@ -188,75 +164,60 @@ class __$$GameStateImplCopyWithImpl<$Res>
     Object? status = null,
     Object? difficulty = null,
     Object? elapsedSeconds = null,
+    Object? playSecondsThisSegment = null,
     Object? mistakes = null,
-    Object? maxMistakes = null,
-    Object? hintsRemaining = null,
-    Object? isPencilMode = null,
     Object? selectedRow = freezed,
     Object? selectedCol = freezed,
   }) {
-    return _then(
-      _$GameStateImpl(
-        board: freezed == board
-            ? _value.board
-            : board // ignore: cast_nullable_to_non_nullable
-                  as Board?,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as GameStatus,
-        difficulty: null == difficulty
-            ? _value.difficulty
-            : difficulty // ignore: cast_nullable_to_non_nullable
-                  as Difficulty,
-        elapsedSeconds: null == elapsedSeconds
-            ? _value.elapsedSeconds
-            : elapsedSeconds // ignore: cast_nullable_to_non_nullable
-                  as int,
-        mistakes: null == mistakes
-            ? _value.mistakes
-            : mistakes // ignore: cast_nullable_to_non_nullable
-                  as int,
-        maxMistakes: null == maxMistakes
-            ? _value.maxMistakes
-            : maxMistakes // ignore: cast_nullable_to_non_nullable
-                  as int,
-        hintsRemaining: null == hintsRemaining
-            ? _value.hintsRemaining
-            : hintsRemaining // ignore: cast_nullable_to_non_nullable
-                  as int,
-        isPencilMode: null == isPencilMode
-            ? _value.isPencilMode
-            : isPencilMode // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        selectedRow: freezed == selectedRow
-            ? _value.selectedRow
-            : selectedRow // ignore: cast_nullable_to_non_nullable
-                  as int?,
-        selectedCol: freezed == selectedCol
-            ? _value.selectedCol
-            : selectedCol // ignore: cast_nullable_to_non_nullable
-                  as int?,
-      ),
-    );
+    return _then(_$GameStateImpl(
+      board: freezed == board
+          ? _value.board
+          : board // ignore: cast_nullable_to_non_nullable
+              as Board?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as GameStatus,
+      difficulty: null == difficulty
+          ? _value.difficulty
+          : difficulty // ignore: cast_nullable_to_non_nullable
+              as Difficulty,
+      elapsedSeconds: null == elapsedSeconds
+          ? _value.elapsedSeconds
+          : elapsedSeconds // ignore: cast_nullable_to_non_nullable
+              as int,
+      playSecondsThisSegment: null == playSecondsThisSegment
+          ? _value.playSecondsThisSegment
+          : playSecondsThisSegment // ignore: cast_nullable_to_non_nullable
+              as int,
+      mistakes: null == mistakes
+          ? _value.mistakes
+          : mistakes // ignore: cast_nullable_to_non_nullable
+              as int,
+      selectedRow: freezed == selectedRow
+          ? _value.selectedRow
+          : selectedRow // ignore: cast_nullable_to_non_nullable
+              as int?,
+      selectedCol: freezed == selectedCol
+          ? _value.selectedCol
+          : selectedCol // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
   }
 }
 
 /// @nodoc
 
 class _$GameStateImpl implements _GameState {
-  const _$GameStateImpl({
-    this.board,
-    this.status = GameStatus.initial,
-    this.difficulty = Difficulty.easy,
-    this.elapsedSeconds = 0,
-    this.mistakes = 0,
-    this.maxMistakes = 3,
-    this.hintsRemaining = 3,
-    this.isPencilMode = false,
-    this.selectedRow,
-    this.selectedCol,
-  });
+  const _$GameStateImpl(
+      {this.board,
+      this.status = GameStatus.initial,
+      this.difficulty = Difficulty.easy,
+      this.elapsedSeconds = 0,
+      this.playSecondsThisSegment = 0,
+      this.mistakes = 0,
+      this.selectedRow,
+      this.selectedCol});
 
   @override
   final Board? board;
@@ -271,16 +232,10 @@ class _$GameStateImpl implements _GameState {
   final int elapsedSeconds;
   @override
   @JsonKey()
+  final int playSecondsThisSegment;
+  @override
+  @JsonKey()
   final int mistakes;
-  @override
-  @JsonKey()
-  final int maxMistakes;
-  @override
-  @JsonKey()
-  final int hintsRemaining;
-  @override
-  @JsonKey()
-  final bool isPencilMode;
   @override
   final int? selectedRow;
   @override
@@ -288,7 +243,7 @@ class _$GameStateImpl implements _GameState {
 
   @override
   String toString() {
-    return 'GameState(board: $board, status: $status, difficulty: $difficulty, elapsedSeconds: $elapsedSeconds, mistakes: $mistakes, maxMistakes: $maxMistakes, hintsRemaining: $hintsRemaining, isPencilMode: $isPencilMode, selectedRow: $selectedRow, selectedCol: $selectedCol)';
+    return 'GameState(board: $board, status: $status, difficulty: $difficulty, elapsedSeconds: $elapsedSeconds, playSecondsThisSegment: $playSecondsThisSegment, mistakes: $mistakes, selectedRow: $selectedRow, selectedCol: $selectedCol)';
   }
 
   @override
@@ -302,14 +257,10 @@ class _$GameStateImpl implements _GameState {
                 other.difficulty == difficulty) &&
             (identical(other.elapsedSeconds, elapsedSeconds) ||
                 other.elapsedSeconds == elapsedSeconds) &&
+            (identical(other.playSecondsThisSegment, playSecondsThisSegment) ||
+                other.playSecondsThisSegment == playSecondsThisSegment) &&
             (identical(other.mistakes, mistakes) ||
                 other.mistakes == mistakes) &&
-            (identical(other.maxMistakes, maxMistakes) ||
-                other.maxMistakes == maxMistakes) &&
-            (identical(other.hintsRemaining, hintsRemaining) ||
-                other.hintsRemaining == hintsRemaining) &&
-            (identical(other.isPencilMode, isPencilMode) ||
-                other.isPencilMode == isPencilMode) &&
             (identical(other.selectedRow, selectedRow) ||
                 other.selectedRow == selectedRow) &&
             (identical(other.selectedCol, selectedCol) ||
@@ -318,18 +269,15 @@ class _$GameStateImpl implements _GameState {
 
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    board,
-    status,
-    difficulty,
-    elapsedSeconds,
-    mistakes,
-    maxMistakes,
-    hintsRemaining,
-    isPencilMode,
-    selectedRow,
-    selectedCol,
-  );
+      runtimeType,
+      board,
+      status,
+      difficulty,
+      elapsedSeconds,
+      playSecondsThisSegment,
+      mistakes,
+      selectedRow,
+      selectedCol);
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.
@@ -341,18 +289,15 @@ class _$GameStateImpl implements _GameState {
 }
 
 abstract class _GameState implements GameState {
-  const factory _GameState({
-    final Board? board,
-    final GameStatus status,
-    final Difficulty difficulty,
-    final int elapsedSeconds,
-    final int mistakes,
-    final int maxMistakes,
-    final int hintsRemaining,
-    final bool isPencilMode,
-    final int? selectedRow,
-    final int? selectedCol,
-  }) = _$GameStateImpl;
+  const factory _GameState(
+      {final Board? board,
+      final GameStatus status,
+      final Difficulty difficulty,
+      final int elapsedSeconds,
+      final int playSecondsThisSegment,
+      final int mistakes,
+      final int? selectedRow,
+      final int? selectedCol}) = _$GameStateImpl;
 
   @override
   Board? get board;
@@ -363,13 +308,9 @@ abstract class _GameState implements GameState {
   @override
   int get elapsedSeconds;
   @override
+  int get playSecondsThisSegment;
+  @override
   int get mistakes;
-  @override
-  int get maxMistakes;
-  @override
-  int get hintsRemaining;
-  @override
-  bool get isPencilMode;
   @override
   int? get selectedRow;
   @override
