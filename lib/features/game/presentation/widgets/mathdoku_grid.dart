@@ -115,9 +115,9 @@ class _MathdokuCell extends ConsumerWidget {
             child: Text(
               cell.clueText,
               style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Colors.black54,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                color: Colors.black87,
                 height: 1.0,
               ),
             ),
