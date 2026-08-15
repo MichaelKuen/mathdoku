@@ -18,5 +18,6 @@ class GameState with _$GameState {
     @Default(0) int mistakes,
     int? selectedRow,
     int? selectedCol,
+    @Default(false) bool isPencilMode,
   }) = _GameState;
 }

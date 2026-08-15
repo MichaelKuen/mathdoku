@@ -34,6 +34,7 @@ mixin _$Cell {
   CellStatus get cageStatus => throw _privateConstructorUsedError;
   CellStatus get rowStatus => throw _privateConstructorUsedError;
   CellStatus get colStatus => throw _privateConstructorUsedError;
+  List<int> get notes => throw _privateConstructorUsedError;
 
   /// Serializes this Cell to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -63,7 +64,8 @@ abstract class $CellCopyWith<$Res> {
       String clueText,
       CellStatus cageStatus,
       CellStatus rowStatus,
-      CellStatus colStatus});
+      CellStatus colStatus,
+      List<int> notes});
 }
 
 /// @nodoc
@@ -95,6 +97,7 @@ class _$CellCopyWithImpl<$Res, $Val extends Cell>
     Object? cageStatus = null,
     Object? rowStatus = null,
     Object? colStatus = null,
+    Object? notes = null,
   }) {
     return _then(_value.copyWith(
       value: null == value
@@ -153,6 +156,10 @@ class _$CellCopyWithImpl<$Res, $Val extends Cell>
           ? _value.colStatus
           : colStatus // ignore: cast_nullable_to_non_nullable
               as CellStatus,
+      notes: null == notes
+          ? _value.notes
+          : notes // ignore: cast_nullable_to_non_nullable
+              as List<int>,
     ) as $Val);
   }
 }
@@ -178,7 +185,8 @@ abstract class _$$CellImplCopyWith<$Res> implements $CellCopyWith<$Res> {
       String clueText,
       CellStatus cageStatus,
       CellStatus rowStatus,
-      CellStatus colStatus});
+      CellStatus colStatus,
+      List<int> notes});
 }
 
 /// @nodoc
@@ -207,6 +215,7 @@ class __$$CellImplCopyWithImpl<$Res>
     Object? cageStatus = null,
     Object? rowStatus = null,
     Object? colStatus = null,
+    Object? notes = null,
   }) {
     return _then(_$CellImpl(
       value: null == value
@@ -265,6 +274,10 @@ class __$$CellImplCopyWithImpl<$Res>
           ? _value.colStatus
           : colStatus // ignore: cast_nullable_to_non_nullable
               as CellStatus,
+      notes: null == notes
+          ? _value._notes
+          : notes // ignore: cast_nullable_to_non_nullable
+              as List<int>,
     ));
   }
 }
@@ -286,7 +299,9 @@ class _$CellImpl implements _Cell {
       this.clueText = '',
       this.cageStatus = CellStatus.normal,
       this.rowStatus = CellStatus.normal,
-      this.colStatus = CellStatus.normal});
+      this.colStatus = CellStatus.normal,
+      final List<int> notes = const <int>[]})
+      : _notes = notes;
 
   factory _$CellImpl.fromJson(Map<String, dynamic> json) =>
       _$$CellImplFromJson(json);
@@ -329,10 +344,18 @@ class _$CellImpl implements _Cell {
   @override
   @JsonKey()
   final CellStatus colStatus;
+  final List<int> _notes;
+  @override
+  @JsonKey()
+  List<int> get notes {
+    if (_notes is EqualUnmodifiableListView) return _notes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_notes);
+  }
 
   @override
   String toString() {
-    return 'Cell(value: $value, row: $row, col: $col, cageId: $cageId, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isSameNumber: $isSameNumber, isError: $isError, showClue: $showClue, clueText: $clueText, cageStatus: $cageStatus, rowStatus: $rowStatus, colStatus: $colStatus)';
+    return 'Cell(value: $value, row: $row, col: $col, cageId: $cageId, isFixed: $isFixed, isSelected: $isSelected, isHighlighted: $isHighlighted, isSameNumber: $isSameNumber, isError: $isError, showClue: $showClue, clueText: $clueText, cageStatus: $cageStatus, rowStatus: $rowStatus, colStatus: $colStatus, notes: $notes)';
   }
 
   @override
@@ -361,7 +384,8 @@ class _$CellImpl implements _Cell {
             (identical(other.rowStatus, rowStatus) ||
                 other.rowStatus == rowStatus) &&
             (identical(other.colStatus, colStatus) ||
-                other.colStatus == colStatus));
+                other.colStatus == colStatus) &&
+            const DeepCollectionEquality().equals(other._notes, _notes));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -381,7 +405,8 @@ class _$CellImpl implements _Cell {
       clueText,
       cageStatus,
       rowStatus,
-      colStatus);
+      colStatus,
+      const DeepCollectionEquality().hash(_notes));
 
   /// Create a copy of Cell
   /// with the given fields replaced by the non-null parameter values.
@@ -414,7 +439,8 @@ abstract class _Cell implements Cell {
       final String clueText,
       final CellStatus cageStatus,
       final CellStatus rowStatus,
-      final CellStatus colStatus}) = _$CellImpl;
+      final CellStatus colStatus,
+      final List<int> notes}) = _$CellImpl;
 
   factory _Cell.fromJson(Map<String, dynamic> json) = _$CellImpl.fromJson;
 
@@ -446,6 +472,8 @@ abstract class _Cell implements Cell {
   CellStatus get rowStatus;
   @override
   CellStatus get colStatus;
+  @override
+  List<int> get notes;
 
   /// Create a copy of Cell
   /// with the given fields replaced by the non-null parameter values.

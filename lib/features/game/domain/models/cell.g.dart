@@ -25,6 +25,10 @@ _$CellImpl _$$CellImplFromJson(Map<String, dynamic> json) => _$CellImpl(
           CellStatus.normal,
       colStatus: $enumDecodeNullable(_$CellStatusEnumMap, json['colStatus']) ??
           CellStatus.normal,
+      notes: (json['notes'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const <int>[],
     );
 
 Map<String, dynamic> _$$CellImplToJson(_$CellImpl instance) =>
@@ -43,6 +47,7 @@ Map<String, dynamic> _$$CellImplToJson(_$CellImpl instance) =>
       'cageStatus': _$CellStatusEnumMap[instance.cageStatus]!,
       'rowStatus': _$CellStatusEnumMap[instance.rowStatus]!,
       'colStatus': _$CellStatusEnumMap[instance.colStatus]!,
+      'notes': instance.notes,
     };
 
 const _$CellStatusEnumMap = {

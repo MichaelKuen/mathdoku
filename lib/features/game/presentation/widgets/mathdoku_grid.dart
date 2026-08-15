@@ -139,6 +139,34 @@ class _MathdokuCell extends ConsumerWidget {
               ),
             ),
           ),
+        // Pencil notes — 2×2 mini-grid shown when cell is empty
+        if (cell.value == 0 && cell.notes.isNotEmpty)
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  2, cell.showClue ? 18 : 4, 2, 4),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _NoteDigit(digit: 1, notes: cell.notes),
+                        _NoteDigit(digit: 2, notes: cell.notes),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _NoteDigit(digit: 3, notes: cell.notes),
+                        _NoteDigit(digit: 4, notes: cell.notes),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         // Player digit centred
         if (cell.value != 0)
           Center(
@@ -187,6 +215,30 @@ class _MathdokuCell extends ConsumerWidget {
           border: _border(),
         ),
         child: content,
+      ),
+    );
+  }
+}
+
+class _NoteDigit extends StatelessWidget {
+  final int digit;
+  final List<int> notes;
+
+  const _NoteDigit({required this.digit, required this.notes});
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = notes.contains(digit);
+    return Expanded(
+      child: Center(
+        child: Text(
+          visible ? '$digit' : '',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Colors.blueGrey.shade700,
+          ),
+        ),
       ),
     );
   }

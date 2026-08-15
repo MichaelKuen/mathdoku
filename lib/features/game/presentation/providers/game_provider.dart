@@ -72,6 +72,10 @@ class GameNotifier extends _$GameNotifier {
     );
   }
 
+  void togglePencilMode() {
+    state = state.copyWith(isPencilMode: !state.isPencilMode);
+  }
+
   void selectCell(int row, int col) {
     if (state.status != GameStatus.playing) return;
     state = state.copyWith(selectedRow: row, selectedCol: col);
@@ -106,6 +110,25 @@ class GameNotifier extends _$GameNotifier {
     final cell = state.board!.getCell(row, col);
     if (cell.isFixed) { return; }
 
+    if (state.isPencilMode) {
+      // Toggle the digit in the cell's notes; only on empty cells.
+      if (cell.value != 0) { return; }
+      final notes = List<int>.from(cell.notes);
+      if (notes.contains(number)) {
+        notes.remove(number);
+      } else {
+        notes.add(number);
+      }
+      final newCells = state.board!.cells.map<List<Cell>>((r) {
+        return r.map<Cell>((c) {
+          if (c.row == row && c.col == col) { return c.copyWith(notes: notes); }
+          return c;
+        }).toList();
+      }).toList();
+      state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+      return;
+    }
+
     final correct = state.board!.getSolutionValue(row, col);
     final isCorrect = number == correct;
 
@@ -114,7 +137,12 @@ class GameNotifier extends _$GameNotifier {
     final newCells = state.board!.cells.map<List<Cell>>((r) {
       return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
-          return c.copyWith(value: number, isError: !isCorrect);
+          return c.copyWith(value: number, isError: !isCorrect, notes: const []);
+        }
+        // Auto-remove the placed digit from notes in the same row/column.
+        if (isCorrect && (c.row == row || c.col == col) && c.notes.contains(number)) {
+          final updated = List<int>.from(c.notes)..remove(number);
+          return c.copyWith(notes: updated);
         }
         return c;
       }).toList();
@@ -143,7 +171,10 @@ class GameNotifier extends _$GameNotifier {
     final newCells = state.board!.cells.map<List<Cell>>((r) {
       return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
-          return c.copyWith(value: 0, isError: false);
+          // First erase clears a placed digit (keeping notes visible).
+          // Second erase (already empty) clears notes too.
+          if (c.value != 0) { return c.copyWith(value: 0, isError: false); }
+          return c.copyWith(notes: const []);
         }
         return c;
       }).toList();
@@ -185,7 +216,7 @@ class GameNotifier extends _$GameNotifier {
     final newCells = state.board!.cells.map<List<Cell>>((r) {
       return r.map<Cell>((c) {
         if (c.row == row && c.col == col) {
-          return c.copyWith(value: correctValue, isError: false, isFixed: true);
+          return c.copyWith(value: correctValue, isError: false, isFixed: true, notes: const []);
         }
         return c;
       }).toList();

@@ -23,6 +23,7 @@ class Cell with _$Cell {
     @Default(CellStatus.normal) CellStatus cageStatus,
     @Default(CellStatus.normal) CellStatus rowStatus,
     @Default(CellStatus.normal) CellStatus colStatus,
+    @Default(<int>[]) List<int> notes,
   }) = _Cell;
 
   factory Cell.fromJson(Map<String, dynamic> json) => _$CellFromJson(json);

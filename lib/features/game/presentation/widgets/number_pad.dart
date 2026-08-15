@@ -117,14 +117,18 @@ class ActionRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isPencilMode = ref.watch(
+      gameNotifierProvider.select((s) => s.isPencilMode),
+    );
+    final notifier = ref.read(gameNotifierProvider.notifier);
+
     return Row(
       children: [
         Expanded(
           child: SizedBox(
             height: 56,
             child: ElevatedButton(
-              onPressed: () =>
-                  ref.read(gameNotifierProvider.notifier).useHint(),
+              onPressed: () => notifier.useHint(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFD700),
                 foregroundColor: Colors.black87,
@@ -132,30 +136,47 @@ class ActionRow extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                '💡 Hint',
-                style: TextStyle(fontSize: 18),
+              child: const Text('💡 Hint', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: SizedBox(
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () => notifier.togglePencilMode(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isPencilMode
+                    ? Colors.blueGrey.shade600
+                    : Colors.blueGrey.shade100,
+                foregroundColor: isPencilMode
+                    ? Colors.white
+                    : Colors.blueGrey.shade700,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                '✏️ ${isPencilMode ? "Notes ON" : "Notes"}',
+                style: const TextStyle(fontSize: 15),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 8),
         Expanded(
           child: SizedBox(
             height: 56,
             child: OutlinedButton(
-              onPressed: () =>
-                  ref.read(gameNotifierProvider.notifier).eraseCell(),
+              onPressed: () => notifier.eraseCell(),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: Colors.grey.shade400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                '🧹 Erase',
-                style: TextStyle(fontSize: 18),
-              ),
+              child: const Text('🧹 Erase', style: TextStyle(fontSize: 16)),
             ),
           ),
         ),

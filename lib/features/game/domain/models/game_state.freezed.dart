@@ -24,6 +24,7 @@ mixin _$GameState {
   int get mistakes => throw _privateConstructorUsedError;
   int? get selectedRow => throw _privateConstructorUsedError;
   int? get selectedCol => throw _privateConstructorUsedError;
+  bool get isPencilMode => throw _privateConstructorUsedError;
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.
@@ -45,7 +46,8 @@ abstract class $GameStateCopyWith<$Res> {
       int playSecondsThisSegment,
       int mistakes,
       int? selectedRow,
-      int? selectedCol});
+      int? selectedCol,
+      bool isPencilMode});
 
   $BoardCopyWith<$Res>? get board;
 }
@@ -73,6 +75,7 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
     Object? mistakes = null,
     Object? selectedRow = freezed,
     Object? selectedCol = freezed,
+    Object? isPencilMode = null,
   }) {
     return _then(_value.copyWith(
       board: freezed == board
@@ -107,6 +110,10 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
           ? _value.selectedCol
           : selectedCol // ignore: cast_nullable_to_non_nullable
               as int?,
+      isPencilMode: null == isPencilMode
+          ? _value.isPencilMode
+          : isPencilMode // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 
@@ -141,7 +148,8 @@ abstract class _$$GameStateImplCopyWith<$Res>
       int playSecondsThisSegment,
       int mistakes,
       int? selectedRow,
-      int? selectedCol});
+      int? selectedCol,
+      bool isPencilMode});
 
   @override
   $BoardCopyWith<$Res>? get board;
@@ -168,6 +176,7 @@ class __$$GameStateImplCopyWithImpl<$Res>
     Object? mistakes = null,
     Object? selectedRow = freezed,
     Object? selectedCol = freezed,
+    Object? isPencilMode = null,
   }) {
     return _then(_$GameStateImpl(
       board: freezed == board
@@ -202,6 +211,10 @@ class __$$GameStateImplCopyWithImpl<$Res>
           ? _value.selectedCol
           : selectedCol // ignore: cast_nullable_to_non_nullable
               as int?,
+      isPencilMode: null == isPencilMode
+          ? _value.isPencilMode
+          : isPencilMode // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -217,7 +230,8 @@ class _$GameStateImpl implements _GameState {
       this.playSecondsThisSegment = 0,
       this.mistakes = 0,
       this.selectedRow,
-      this.selectedCol});
+      this.selectedCol,
+      this.isPencilMode = false});
 
   @override
   final Board? board;
@@ -240,10 +254,13 @@ class _$GameStateImpl implements _GameState {
   final int? selectedRow;
   @override
   final int? selectedCol;
+  @override
+  @JsonKey()
+  final bool isPencilMode;
 
   @override
   String toString() {
-    return 'GameState(board: $board, status: $status, difficulty: $difficulty, elapsedSeconds: $elapsedSeconds, playSecondsThisSegment: $playSecondsThisSegment, mistakes: $mistakes, selectedRow: $selectedRow, selectedCol: $selectedCol)';
+    return 'GameState(board: $board, status: $status, difficulty: $difficulty, elapsedSeconds: $elapsedSeconds, playSecondsThisSegment: $playSecondsThisSegment, mistakes: $mistakes, selectedRow: $selectedRow, selectedCol: $selectedCol, isPencilMode: $isPencilMode)';
   }
 
   @override
@@ -264,7 +281,9 @@ class _$GameStateImpl implements _GameState {
             (identical(other.selectedRow, selectedRow) ||
                 other.selectedRow == selectedRow) &&
             (identical(other.selectedCol, selectedCol) ||
-                other.selectedCol == selectedCol));
+                other.selectedCol == selectedCol) &&
+            (identical(other.isPencilMode, isPencilMode) ||
+                other.isPencilMode == isPencilMode));
   }
 
   @override
@@ -277,7 +296,8 @@ class _$GameStateImpl implements _GameState {
       playSecondsThisSegment,
       mistakes,
       selectedRow,
-      selectedCol);
+      selectedCol,
+      isPencilMode);
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.
@@ -297,7 +317,8 @@ abstract class _GameState implements GameState {
       final int playSecondsThisSegment,
       final int mistakes,
       final int? selectedRow,
-      final int? selectedCol}) = _$GameStateImpl;
+      final int? selectedCol,
+      final bool isPencilMode}) = _$GameStateImpl;
 
   @override
   Board? get board;
@@ -315,6 +336,8 @@ abstract class _GameState implements GameState {
   int? get selectedRow;
   @override
   int? get selectedCol;
+  @override
+  bool get isPencilMode;
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.
