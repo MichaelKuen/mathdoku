@@ -15,6 +15,7 @@ highlighted cage of cells satisfies its arithmetic clue.
 - **Two difficulty levels**
   - **Easy** — addition and multiplication only; single-cell cages are pre-filled as hints
   - **Medium** — all four operations (+, −, ×, ÷); larger cages, no pre-fills
+- **Pencil / notes mode** — tap ✏️ Notes to toggle pencil mode; write candidate digits into cells as a 2×2 mini-grid without committing to an answer
 - **Unlimited hints** — tap 💡 Hint at any time; auto-selects the first empty cell if none is chosen
 - **Gentle error feedback** — wrong answers shake and turn red; no game-over penalty
 - **Mandatory 10-minute screen breaks** — a full-screen break reminder appears after every
@@ -37,7 +38,11 @@ highlighted cage of cells satisfies its arithmetic clue.
    - Each **column** contains 1, 2, 3, 4 exactly once.
    - The digits in each **cage** satisfy its arithmetic clue.
 3. Tap a cell to select it, then tap a digit on the number pad to enter it.
-4. Use **💡 Hint** to reveal any cell and **🧹 Erase** to clear an entry.
+4. Use **✏️ Notes** to toggle pencil mode — digit buttons write small candidate numbers
+   into the cell instead of committing an answer. Tap a digit again to remove it.
+5. Use **💡 Hint** to reveal any cell and **🧹 Erase** to clear an entry.
+   - First erase press removes a placed digit (revealing any notes underneath).
+   - Second press clears the notes.
 
 ### Keyboard Controls (Windows & Chrome)
 

@@ -58,6 +58,16 @@ coral (kPrimary), making them clearly distinct from the red error state.
 Clue labels (e.g. "6+", "12×") updated from 11 px / w700 / black54 to
 15 px / w900 / black87 for much better readability on all screen sizes.
 
+### Pencil / notes mode added
+Tap the ✏️ Notes button to toggle pencil mode. In pencil mode, digit buttons write small
+candidate numbers (1–4) into empty cells displayed in a 2×2 mini-grid. Tapping the same
+digit again removes it. The button turns dark and shows "Notes ON" when active.
+
+Switching back to pen mode and entering a correct digit clears that cell's notes and
+auto-removes the placed digit from notes in the same row and column. Erase first removes
+a placed digit (revealing notes underneath); a second press clears the notes. Hint clears
+notes on the cell it fills. Keyboard keys 1–4 respect pencil mode automatically.
+
 ### Hint button fixed — now always works
 Previously the hint button silently did nothing if no cell was selected. It now
 automatically finds and fills the first empty or incorrect cell in reading order,
