@@ -185,6 +185,12 @@ class _GamePageState extends ConsumerState<GamePage> {
       return KeyEventResult.handled;
     }
 
+    // P — toggle pencil/notes mode
+    if (key == LogicalKeyboardKey.keyP) {
+      notifier.togglePencilMode();
+      return KeyEventResult.handled;
+    }
+
     return KeyEventResult.ignored;
   }
 

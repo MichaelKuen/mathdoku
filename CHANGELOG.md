@@ -66,7 +66,7 @@ digit again removes it. The button turns dark and shows "Notes ON" when active.
 Switching back to pen mode and entering a correct digit clears that cell's notes and
 auto-removes the placed digit from notes in the same row and column. Erase first removes
 a placed digit (revealing notes underneath); a second press clears the notes. Hint clears
-notes on the cell it fills. Keyboard keys 1–4 respect pencil mode automatically.
+notes on the cell it fills. Keyboard keys 1–4 respect pencil mode automatically. Press `P` to toggle pencil mode from the keyboard.
 
 ### Hint button fixed — now always works
 Previously the hint button silently did nothing if no cell was selected. It now

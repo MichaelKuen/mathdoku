@@ -52,6 +52,7 @@ highlighted cage of cells satisfies its arithmetic clue.
 | `1` `2` `3` `4` | Enter a digit (main keyboard or numpad) |
 | `Delete` / `Backspace` | Erase the selected cell |
 | `H` | Hint |
+| `P` | Toggle pencil / notes mode |
 
 ---
 
