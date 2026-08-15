@@ -37,7 +37,7 @@ Non-negotiable requirements:
   encouraging language only, no dark themes.
 - **Unlimited hints** — children should never feel stuck.
 - **No mistake limit** — wrong answers show gentle feedback but never end the game.
-- **No notes/pencil mode** — 4×4 is simple enough without it.
+- **Pencil / notes mode** — tap ✏️ Notes (or press `P`) to toggle; writes candidate digits into empty cells as a 2×2 mini-grid. Entering a correct digit auto-clears that note from the same row/column.
 - **State management:** flutter_riverpod + riverpod_annotation (code generation).
 - **Immutable models:** freezed + freezed_annotation.
 - **Animations:** flutter_animate for in-game feedback; confetti package for win celebration.
