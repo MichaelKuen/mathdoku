@@ -62,35 +62,20 @@ class _GamePageState extends ConsumerState<GamePage> {
         children: [
           gameState.status == GameStatus.loading
               ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    _StatsBar(gameState: gameState),
-                    Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 340,
-                            maxHeight: 340,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: const MathdokuGrid(),
-                          ),
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth > 600;
+                    return Column(
+                      children: [
+                        _StatsBar(gameState: gameState),
+                        Expanded(
+                          child: isWide
+                              ? _wideLayout()
+                              : _narrowLayout(),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const NumberPad(),
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const ActionRow(),
-                    ),
-                    const SizedBox(height: 28),
-                  ],
+                      ],
+                    );
+                  },
                 ),
           Align(
             alignment: Alignment.topCenter,
@@ -116,6 +101,70 @@ class _GamePageState extends ConsumerState<GamePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _wideLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (ctx, c) {
+              final size = (c.maxHeight - 32).clamp(0.0, c.maxWidth - 32);
+              return Center(
+                child: SizedBox.square(
+                  dimension: size,
+                  child: const MathdokuGrid(),
+                ),
+              );
+            },
+          ),
+        ),
+        Container(
+          width: 300,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              NumberPad(),
+              SizedBox(height: 20),
+              ActionRow(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _narrowLayout() {
+    return Column(
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (ctx, c) {
+              final size = (c.maxWidth - 32).clamp(0.0, c.maxHeight - 32);
+              return Center(
+                child: SizedBox.square(
+                  dimension: size,
+                  child: const MathdokuGrid(),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: NumberPad(),
+        ),
+        const SizedBox(height: 12),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: ActionRow(),
+        ),
+        const SizedBox(height: 28),
+      ],
     );
   }
 

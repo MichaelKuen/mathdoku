@@ -33,7 +33,7 @@ class MathdokuGrid extends ConsumerWidget {
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: kPrimary, width: 3),
+          border: Border.all(color: kPrimary, width: 4),
           borderRadius: BorderRadius.circular(8),
         ),
         child: ClipRRect(
@@ -87,13 +87,13 @@ class _MathdokuCell extends ConsumerWidget {
     final nr = cell.row + dr;
     final nc = cell.col + dc;
     if (nr < 0 || nr > 3 || nc < 0 || nc > 3) {
-      return const BorderSide(width: 2.5, color: Colors.black87);
+      return const BorderSide(width: 4.0, color: Colors.black87);
     }
     final neighbor = board.getCell(nr, nc);
     if (neighbor.cageId == cell.cageId) {
-      return BorderSide(width: 0.5, color: Colors.grey.shade300);
+      return BorderSide(width: 1.5, color: Colors.grey.shade500);
     }
-    return const BorderSide(width: 2.0, color: Colors.black87);
+    return const BorderSide(width: 3.5, color: Colors.black87);
   }
 
   Border _border() => Border(
