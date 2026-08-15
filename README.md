@@ -39,6 +39,15 @@ highlighted cage of cells satisfies its arithmetic clue.
 3. Tap a cell to select it, then tap a digit on the number pad to enter it.
 4. Use **💡 Hint** to reveal any cell and **🧹 Erase** to clear an entry.
 
+### Keyboard Controls (Windows & Chrome)
+
+| Key | Action |
+|---|---|
+| `←` `↑` `→` `↓` | Move cell selection (hold to repeat) |
+| `1` `2` `3` `4` | Enter a digit (main keyboard or numpad) |
+| `Delete` / `Backspace` | Erase the selected cell |
+| `H` | Hint |
+
 ---
 
 ## Tech Stack
