@@ -1,5 +1,6 @@
 // Copyright © App Verse Games. All rights reserved.
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
@@ -19,17 +20,20 @@ class GamePage extends ConsumerStatefulWidget {
 
 class _GamePageState extends ConsumerState<GamePage> {
   late ConfettiController _confettiController;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _confettiController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -58,7 +62,11 @@ class _GamePageState extends ConsumerState<GamePage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Stack(
+      body: Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        child: Stack(
         children: [
           gameState.status == GameStatus.loading
               ? const Center(child: CircularProgressIndicator())
@@ -100,8 +108,84 @@ class _GamePageState extends ConsumerState<GamePage> {
             ),
           ),
         ],
+        ),
       ),
     );
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    // Act on key-down and key-repeat (repeat for held arrow keys only).
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+
+    final gameState = ref.read(gameNotifierProvider);
+    if (gameState.status != GameStatus.playing) {
+      return KeyEventResult.ignored;
+    }
+
+    final notifier = ref.read(gameNotifierProvider.notifier);
+    final key = event.logicalKey;
+    final curRow = gameState.selectedRow ?? 0;
+    final curCol = gameState.selectedCol ?? 0;
+
+    // Arrow keys — navigate the grid (also fires on key-repeat)
+    if (key == LogicalKeyboardKey.arrowUp) {
+      notifier.selectCell((curRow - 1).clamp(0, 3), curCol);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowDown) {
+      notifier.selectCell((curRow + 1).clamp(0, 3), curCol);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      notifier.selectCell(curRow, (curCol - 1).clamp(0, 3));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowRight) {
+      notifier.selectCell(curRow, (curCol + 1).clamp(0, 3));
+      return KeyEventResult.handled;
+    }
+
+    // Everything below only fires once per key-press, not on repeat.
+    if (event is KeyRepeatEvent) return KeyEventResult.ignored;
+
+    // Number keys 1–4 (main keyboard and numpad)
+    if (key == LogicalKeyboardKey.digit1 ||
+        key == LogicalKeyboardKey.numpad1) {
+      notifier.inputNumber(1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit2 ||
+        key == LogicalKeyboardKey.numpad2) {
+      notifier.inputNumber(2);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit3 ||
+        key == LogicalKeyboardKey.numpad3) {
+      notifier.inputNumber(3);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit4 ||
+        key == LogicalKeyboardKey.numpad4) {
+      notifier.inputNumber(4);
+      return KeyEventResult.handled;
+    }
+
+    // Delete / Backspace — erase selected cell
+    if (key == LogicalKeyboardKey.delete ||
+        key == LogicalKeyboardKey.backspace) {
+      notifier.eraseCell();
+      return KeyEventResult.handled;
+    }
+
+    // H — hint
+    if (key == LogicalKeyboardKey.keyH) {
+      notifier.useHint();
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
   }
 
   Widget _wideLayout() {
