@@ -477,9 +477,14 @@ class GameNotifier extends _$GameNotifier {
     Call _updateGroupStatuses() then _highlightCells(row, col).
 
   void useHint():
-    Guard: status == playing, selectedRow/Col not null, cell not fixed.
+    Guard: status == playing.
+    If no cell is selected OR the selected cell is already fixed:
+      find the first empty/error non-fixed cell in reading order (row 0→3, col 0→3).
+      Use that as the target cell.
+    If still no target found: return early.
     Get correctValue from solution.
     Set cell: value=correctValue, isFixed=true, isError=false.
+    Update selectedRow/selectedCol to point at the hinted cell (so it visually highlights).
     Call _updateGroupStatuses() then _highlightCells(row, col).
     Check board.isComplete → status = won, cancel timer.
 
@@ -579,8 +584,8 @@ This widget is more complex than a standard Sudoku grid because:
 Reads gameNotifierProvider. If board is null returns SizedBox.shrink().
 
 Renders an AspectRatio(1.0) container with:
-  - Outer border: BoxDecoration(border: Border.all(color: kPrimary, width: 3),
-                               borderRadius: BorderRadius.circular(4))
+  - Outer border: BoxDecoration(border: Border.all(color: kPrimary, width: 4),
+                               borderRadius: BorderRadius.circular(8))
   - GridView.builder: crossAxisCount 4, itemCount 16, NeverScrollableScrollPhysics,
                       padding: EdgeInsets.zero
   - Each item: _MathdokuCell(cell: board.getCell(row, col), board: board)
@@ -621,12 +626,12 @@ Border logic — for each of the 4 sides compute a BorderSide using _borderSide(
     nr = cell.row + dr
     nc = cell.col + dc
     If nr < 0 || nr > 3 || nc < 0 || nc > 3:
-      return BorderSide(width: 2.5, color: Colors.black87)  // grid edge
+      return BorderSide(width: 4.0, color: Colors.black87)   // grid edge
     neighbor = board.getCell(nr, nc)
     if neighbor.cageId == cell.cageId:
-      return BorderSide(width: 0.5, color: Colors.grey.shade300)  // same cage
+      return BorderSide(width: 1.5, color: Colors.grey.shade500)  // same cage
     else:
-      return BorderSide(width: 2.0, color: Colors.black87)   // cage boundary
+      return BorderSide(width: 3.5, color: Colors.black87)   // cage boundary
 
   Apply:
     Border(
@@ -644,9 +649,9 @@ Cell content — use a Stack:
         Text(
           cell.clueText,
           style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: Colors.black54,
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            color: Colors.black87,
             height: 1.0,
           ),
         )
@@ -662,7 +667,7 @@ Cell content — use a Stack:
             color:
               cell.isError  → Colors.red.shade600
               cell.isFixed  → Colors.black87
-              else          → kPrimary,
+              else          → Colors.green.shade700,   // user-entered correct digit
           ),
         )
 
@@ -870,15 +875,36 @@ AppBar:
 Body: Stack [
 
   Layer 1 — game content:
+    LayoutBuilder to detect screen width:
+      isWide = constraints.maxWidth > 600
+
     Column:
       _StatsBar(state: gameState)
-      Expanded → Center → ConstrainedBox(maxWidth: 340, maxHeight: 340):
-        Padding(all: 12) → MathdokuGrid()
-      SizedBox(height: 12)
-      Padding(horizontal: 20) → NumberPad()
-      SizedBox(height: 12)
-      Padding(horizontal: 20) → ActionRow()
-      SizedBox(height: 28)
+      Expanded:
+        if isWide → Row [
+          Expanded:
+            LayoutBuilder → Center → SizedBox.square(
+              dimension: min(availableHeight - 32, availableWidth - 32),
+              child: MathdokuGrid()
+            )
+          Container(width: 300, padding: all 24):
+            Column(mainAxisAlignment: center):
+              NumberPad()
+              SizedBox(height: 20)
+              ActionRow()
+        ]
+        if narrow → Column [
+          Expanded:
+            LayoutBuilder → Center → SizedBox.square(
+              dimension: min(availableWidth - 32, availableHeight - 32),
+              child: MathdokuGrid()
+            )
+          SizedBox(12)
+          Padding(horizontal: 20) → NumberPad()
+          SizedBox(12)
+          Padding(horizontal: 20) → ActionRow()
+          SizedBox(28)
+        ]
 
   Layer 2 — confetti:
     Align(topCenter) → ConfettiWidget(

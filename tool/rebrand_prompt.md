@@ -83,8 +83,9 @@ nothing was missed (binary and lock files can be ignored).
 
 - For Play Store links, use `AppVerseGames` as the developer ID until the account name is confirmed.
 - The Google Play developer ID in store URLs must match the exact name on the Play Console account.
-- If the project uses `google_fonts`, consider bundling the font as a Flutter asset and removing
-  the package to avoid CDN fetches on web (see the Sudoku project for the pattern).
+- If the project uses `google_fonts` and you need offline/cached font loading on web, consider
+  bundling the font as a Flutter asset and removing the package to avoid CDN fetches
+  (the Mathdoku project uses google_fonts directly and relies on the browser cache).
 - When deploying to a subdirectory on the web host, always build with:
     flutter build web --release --base-href /<folder-name>/
   Without this, all assets resolve to the domain root and the page loads blank.

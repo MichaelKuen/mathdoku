@@ -1,17 +1,113 @@
-# sudoku
+# Mathdoku
 
-A new Flutter project.
+A fun, child-friendly **4×4 Mathdoku** math puzzle game built with Flutter.
+
+Mathdoku (also known as KenKen or CalcuDoku) challenges players to fill a 4×4 grid with
+digits 1–4 so that every row and column contains each digit exactly once — and every
+highlighted cage of cells satisfies its arithmetic clue.
+
+**Published by [App Verse Games](https://appversegames.com)**
+
+---
+
+## Features
+
+- **Two difficulty levels**
+  - **Easy** — addition and multiplication only; single-cell cages are pre-filled as hints
+  - **Medium** — all four operations (+, −, ×, ÷); larger cages, no pre-fills
+- **Unlimited hints** — tap 💡 Hint at any time; auto-selects the first empty cell if none is chosen
+- **Gentle error feedback** — wrong answers shake and turn red; no game-over penalty
+- **Mandatory 10-minute screen breaks** — a full-screen break reminder appears after every
+  10 minutes of play and cannot be skipped with the back button
+- **Zero advertisements** — no AdMob, no ad SDK, no third-party tracking of any kind
+- **Child-safe visuals** — bright pastel colours, large tap targets, rounded shapes,
+  encouraging language, Google Fonts Nunito typeface
+- **Responsive layout** — adapts for mobile (portrait stacked) and wide screens such as
+  Windows and Chrome (grid + controls side-by-side, filling available space)
+- **Confetti win celebration** with animated trophy dialog
+
+---
+
+## How to Play
+
+1. Each cage (coloured group of cells) shows a **clue** in its top-left corner — a target
+   number and an arithmetic operation (e.g. `6+`, `12×`, `2−`, `2÷`).
+2. Fill every cell with a digit 1–4 so that:
+   - Each **row** contains 1, 2, 3, 4 exactly once.
+   - Each **column** contains 1, 2, 3, 4 exactly once.
+   - The digits in each **cage** satisfy its arithmetic clue.
+3. Tap a cell to select it, then tap a digit on the number pad to enter it.
+4. Use **💡 Hint** to reveal any cell and **🧹 Erase** to clear an entry.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Flutter / Dart 3.5+ |
+| State management | flutter_riverpod + riverpod_annotation (code generation) |
+| Immutable models | freezed + freezed_annotation |
+| Font | Google Fonts — Nunito |
+| Animations | flutter_animate |
+| Win celebration | confetti |
+
+---
+
+## Project Structure
+
+```
+lib/
+  core/
+    theme/              app_theme.dart          — colours, kidsTheme
+  features/
+    game/
+      data/
+        repositories/   puzzle_repository_impl.dart
+      domain/
+        logic/          mathdoku_engine.dart    — row/column/cage validation
+                        mathdoku_generator.dart — Latin-square + cage generation
+        models/         board.dart  cage.dart  cell.dart  game_state.dart
+        repositories/   puzzle_repository.dart
+      presentation/
+        pages/          game_page.dart  break_page.dart
+        providers/      game_provider.dart
+        widgets/        mathdoku_grid.dart  number_pad.dart
+    home/
+      presentation/
+        pages/          home_page.dart  privacy_policy_page.dart
+  main.dart
+```
+
+---
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter SDK ≥ 3.5
+- Dart SDK ≥ 3.5
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Run
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run
+```
+
+### Analyze
+
+```bash
+flutter analyze
+```
+
+---
+
+## Privacy
+
+Mathdoku collects no personal data, requires no internet connection, and contains no
+advertisements. See the in-app Privacy Policy for full details.
+
+**Developer contact:** play@appversegames.com
+**Website:** https://appversegames.com
