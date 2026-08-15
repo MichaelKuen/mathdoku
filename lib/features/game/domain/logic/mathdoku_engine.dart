@@ -56,11 +56,11 @@ class MathdokuEngine {
   }
 
   bool isValid(Board board) {
-    for (int r = 0; r < 4; r++) {
+    for (int r = 0; r < board.size; r++) {
       if (checkGroupStatus(board.cells[r]) == GroupStatus.incorrect) return false;
     }
-    for (int c = 0; c < 4; c++) {
-      final col = [for (int r = 0; r < 4; r++) board.cells[r][c]];
+    for (int c = 0; c < board.size; c++) {
+      final col = [for (int r = 0; r < board.size; r++) board.cells[r][c]];
       if (checkGroupStatus(col) == GroupStatus.incorrect) return false;
     }
     return true;

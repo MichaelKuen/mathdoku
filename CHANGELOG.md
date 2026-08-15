@@ -6,6 +6,16 @@ All notable changes to Mathdoku are documented here.
 
 ## [Unreleased]
 
+### Hard difficulty added — 6×6 grid
+A third difficulty level is now available on the home screen (⭐⭐⭐ Hard).
+- **6×6 grid** with digits 1–6: each row and column must contain each digit exactly once.
+- All four arithmetic operations used in cage clues (+, −, ×, ÷).
+- Cages grow up to 6 cells; product-based clues use a higher threshold (120) to keep
+  multiplication feasible.
+- Number pad dynamically renders 6 digit buttons on Hard and 4 on Easy/Medium.
+- Pencil notes display as a 2×3 mini-grid (vs 2×2 on 4×4) with a slightly smaller font.
+- Arrow-key navigation and digit-key input (1–6) adapt automatically to the current grid size.
+
 ---
 
 ## [1.0.0] — Initial Release

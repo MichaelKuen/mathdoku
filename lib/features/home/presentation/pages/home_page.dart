@@ -86,6 +86,21 @@ class HomePage extends ConsumerWidget {
                   );
                 },
               ),
+              const SizedBox(height: 16),
+              _DifficultyButton(
+                emoji: '⭐⭐⭐',
+                label: 'Hard',
+                subtitle: '6×6 grid — all operations',
+                colour: const Color(0xFFFFADAD),
+                onTap: () {
+                  ref
+                      .read(gameNotifierProvider.notifier)
+                      .startGame(Difficulty.hard);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const GamePage()),
+                  );
+                },
+              ),
               const SizedBox(height: 48),
               Center(
                 child: TextButton(

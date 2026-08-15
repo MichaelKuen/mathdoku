@@ -128,47 +128,41 @@ class _GamePageState extends ConsumerState<GamePage> {
     final key = event.logicalKey;
     final curRow = gameState.selectedRow ?? 0;
     final curCol = gameState.selectedCol ?? 0;
+    final gridMax = (gameState.board?.size ?? 4) - 1;
 
     // Arrow keys — navigate the grid (also fires on key-repeat)
     if (key == LogicalKeyboardKey.arrowUp) {
-      notifier.selectCell((curRow - 1).clamp(0, 3), curCol);
+      notifier.selectCell((curRow - 1).clamp(0, gridMax), curCol);
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowDown) {
-      notifier.selectCell((curRow + 1).clamp(0, 3), curCol);
+      notifier.selectCell((curRow + 1).clamp(0, gridMax), curCol);
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowLeft) {
-      notifier.selectCell(curRow, (curCol - 1).clamp(0, 3));
+      notifier.selectCell(curRow, (curCol - 1).clamp(0, gridMax));
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowRight) {
-      notifier.selectCell(curRow, (curCol + 1).clamp(0, 3));
+      notifier.selectCell(curRow, (curCol + 1).clamp(0, gridMax));
       return KeyEventResult.handled;
     }
 
     // Everything below only fires once per key-press, not on repeat.
     if (event is KeyRepeatEvent) return KeyEventResult.ignored;
 
-    // Number keys 1–4 (main keyboard and numpad)
-    if (key == LogicalKeyboardKey.digit1 ||
-        key == LogicalKeyboardKey.numpad1) {
-      notifier.inputNumber(1);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.digit2 ||
-        key == LogicalKeyboardKey.numpad2) {
-      notifier.inputNumber(2);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.digit3 ||
-        key == LogicalKeyboardKey.numpad3) {
-      notifier.inputNumber(3);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.digit4 ||
-        key == LogicalKeyboardKey.numpad4) {
-      notifier.inputNumber(4);
+    // Number keys 1–6 (main keyboard and numpad), gated to current grid size
+    final numKeys = {
+      LogicalKeyboardKey.digit1: 1, LogicalKeyboardKey.numpad1: 1,
+      LogicalKeyboardKey.digit2: 2, LogicalKeyboardKey.numpad2: 2,
+      LogicalKeyboardKey.digit3: 3, LogicalKeyboardKey.numpad3: 3,
+      LogicalKeyboardKey.digit4: 4, LogicalKeyboardKey.numpad4: 4,
+      LogicalKeyboardKey.digit5: 5, LogicalKeyboardKey.numpad5: 5,
+      LogicalKeyboardKey.digit6: 6, LogicalKeyboardKey.numpad6: 6,
+    };
+    final digit = numKeys[key];
+    if (digit != null && digit <= (gameState.board?.size ?? 4)) {
+      notifier.inputNumber(digit);
       return KeyEventResult.handled;
     }
 

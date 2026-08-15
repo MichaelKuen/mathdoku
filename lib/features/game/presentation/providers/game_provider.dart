@@ -194,8 +194,8 @@ class GameNotifier extends _$GameNotifier {
     // If no cell selected, or selected cell is already fixed, find first empty cell.
     if (row == null || col == null || state.board!.getCell(row, col).isFixed) {
       outer:
-      for (int r = 0; r < 4; r++) {
-        for (int c = 0; c < 4; c++) {
+      for (int r = 0; r < state.board!.size; r++) {
+        for (int c = 0; c < state.board!.size; c++) {
           final candidate = state.board!.getCell(r, c);
           if (!candidate.isFixed && (candidate.value == 0 || candidate.isError)) {
             row = r;
@@ -243,18 +243,18 @@ class GameNotifier extends _$GameNotifier {
     final newCells = board.cells.map((r) => r.toList()).toList();
 
     // Row statuses
-    for (int r = 0; r < 4; r++) {
+    for (int r = 0; r < board.size; r++) {
       final status = _toCellStatus(_engine.checkGroupStatus(board.cells[r]));
-      for (int c = 0; c < 4; c++) {
+      for (int c = 0; c < board.size; c++) {
         newCells[r][c] = newCells[r][c].copyWith(rowStatus: status);
       }
     }
 
     // Column statuses
-    for (int c = 0; c < 4; c++) {
-      final col = [for (int r = 0; r < 4; r++) board.cells[r][c]];
+    for (int c = 0; c < board.size; c++) {
+      final col = [for (int r = 0; r < board.size; r++) board.cells[r][c]];
       final status = _toCellStatus(_engine.checkGroupStatus(col));
-      for (int r = 0; r < 4; r++) {
+      for (int r = 0; r < board.size; r++) {
         newCells[r][c] = newCells[r][c].copyWith(colStatus: status);
       }
     }

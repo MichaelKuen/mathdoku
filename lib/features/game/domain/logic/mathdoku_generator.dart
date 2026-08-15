@@ -8,20 +8,20 @@ import '../models/game_state.dart';
 class MathdokuGenerator {
   final _random = Random();
 
+  // Grid size: 4 for Easy/Medium, 6 for Hard.
+  int _sizeFor(Difficulty d) => d == Difficulty.hard ? 6 : 4;
+
   Board generate(Difficulty difficulty) {
-    // 1. Build a valid 4×4 Latin square via backtracking
-    final grid = List.generate(4, (_) => List.filled(4, 0));
-    _solveLatinSquare(grid, 0, 0);
+    final size = _sizeFor(difficulty);
 
-    // 2. Store solution
-    final solution = List.generate(4, (r) => List<int>.from(grid[r]));
+    final grid = List.generate(size, (_) => List.filled(size, 0));
+    _solveLatinSquare(grid, 0, 0, size);
 
-    // 3. Generate cages
-    final (cages, cageIdGrid) = _generateCages(grid, difficulty);
+    final solution = List.generate(size, (r) => List<int>.from(grid[r]));
+    final (cages, cageIdGrid) = _generateCages(grid, difficulty, size);
 
-    // 4. Build Cell grid
-    final cells = List.generate(4, (r) {
-      return List.generate(4, (c) {
+    final cells = List.generate(size, (r) {
+      return List.generate(size, (c) {
         final cageId = cageIdGrid[r][c];
         final cage = cages.firstWhere((g) => g.id == cageId);
         final isTopLeft =
@@ -45,32 +45,30 @@ class MathdokuGenerator {
 
   // ── Latin square ────────────────────────────────────────────────────────────
 
-  bool _solveLatinSquare(List<List<int>> grid, int row, int col) {
-    if (row == 4) return true;
-    final nextRow = col == 3 ? row + 1 : row;
-    final nextCol = col == 3 ? 0 : col + 1;
+  bool _solveLatinSquare(List<List<int>> grid, int row, int col, int size) {
+    if (row == size) return true;
+    final nextRow = col == size - 1 ? row + 1 : row;
+    final nextCol = col == size - 1 ? 0 : col + 1;
 
     if (grid[row][col] != 0) {
-      return _solveLatinSquare(grid, nextRow, nextCol);
+      return _solveLatinSquare(grid, nextRow, nextCol, size);
     }
 
-    final nums = [1, 2, 3, 4]..shuffle(_random);
+    final nums = List.generate(size, (i) => i + 1)..shuffle(_random);
     for (final num in nums) {
-      if (_isSafe(grid, row, col, num)) {
+      if (_isSafe(grid, row, col, num, size)) {
         grid[row][col] = num;
-        if (_solveLatinSquare(grid, nextRow, nextCol)) return true;
+        if (_solveLatinSquare(grid, nextRow, nextCol, size)) return true;
         grid[row][col] = 0;
       }
     }
     return false;
   }
 
-  bool _isSafe(List<List<int>> grid, int row, int col, int num) {
-    for (int c = 0; c < 4; c++) {
-      if (grid[row][c] == num) return false;
-    }
-    for (int r = 0; r < 4; r++) {
-      if (grid[r][col] == num) return false;
+  bool _isSafe(List<List<int>> grid, int row, int col, int num, int size) {
+    for (int i = 0; i < size; i++) {
+      if (grid[row][i] == num) return false;
+      if (grid[i][col] == num) return false;
     }
     return true;
   }
@@ -78,11 +76,11 @@ class MathdokuGenerator {
   // ── Cage generation ─────────────────────────────────────────────────────────
 
   (List<Cage>, List<List<int>>) _generateCages(
-      List<List<int>> grid, Difficulty difficulty) {
-    final cageIdGrid = List.generate(4, (_) => List.filled(4, -1));
+      List<List<int>> grid, Difficulty difficulty, int size) {
+    final cageIdGrid = List.generate(size, (_) => List.filled(size, -1));
     final positions = [
-      for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++) (r, c),
+      for (int r = 0; r < size; r++)
+        for (int c = 0; c < size; c++) (r, c),
     ]..shuffle(_random);
 
     final cages = <Cage>[];
@@ -91,12 +89,11 @@ class MathdokuGenerator {
     for (final (sr, sc) in positions) {
       if (cageIdGrid[sr][sc] != -1) continue;
 
-      final int maxSize;
-      if (difficulty == Difficulty.easy) {
-        maxSize = _random.nextDouble() < 0.5 ? 1 : 2;
-      } else {
-        maxSize = 4;
-      }
+      final int maxSize = switch (difficulty) {
+        Difficulty.easy => _random.nextDouble() < 0.5 ? 1 : 2,
+        Difficulty.medium => 4,
+        Difficulty.hard => 6,
+      };
 
       final cageCells = <(int, int)>[(sr, sc)];
       cageIdGrid[sr][sc] = nextId;
@@ -108,9 +105,9 @@ class MathdokuGenerator {
             final nr = r + dr;
             final nc = c + dc;
             if (nr >= 0 &&
-                nr < 4 &&
+                nr < size &&
                 nc >= 0 &&
-                nc < 4 &&
+                nc < size &&
                 cageIdGrid[nr][nc] == -1 &&
                 !frontier.contains((nr, nc))) {
               frontier.add((nr, nc));
@@ -123,7 +120,6 @@ class MathdokuGenerator {
         cageIdGrid[next.$1][next.$2] = nextId;
       }
 
-      // Sort reading order so first element is always top-left
       cageCells.sort(
           (a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
 
@@ -159,7 +155,7 @@ class MathdokuGenerator {
           : (Operation.multiply, product);
     }
 
-    // Medium
+    // Medium and Hard: 2-cell cages can use any operation
     if (cells.length == 2) {
       final sorted = [...values]..sort();
       final lo = sorted.first;
@@ -173,8 +169,9 @@ class MathdokuGenerator {
       return choices[_random.nextInt(choices.length)];
     }
 
-    // 3+ cells, medium
-    if (product <= 24) {
+    // 3+ cells: + or × with a product threshold scaled by difficulty
+    final productThreshold = difficulty == Difficulty.hard ? 120 : 24;
+    if (product <= productThreshold) {
       return _random.nextBool()
           ? (Operation.add, sum)
           : (Operation.multiply, product);
@@ -185,8 +182,8 @@ class MathdokuGenerator {
   String _clueText(Cage cage) => switch (cage.operation) {
         Operation.given => '${cage.target}',
         Operation.add => '${cage.target}+',
-        Operation.subtract => '${cage.target}−', // −
-        Operation.multiply => '${cage.target}×', // ×
-        Operation.divide => '${cage.target}÷', // ÷
+        Operation.subtract => '${cage.target}−',
+        Operation.multiply => '${cage.target}×',
+        Operation.divide => '${cage.target}÷',
       };
 }

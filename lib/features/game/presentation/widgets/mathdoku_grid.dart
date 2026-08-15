@@ -55,13 +55,13 @@ class MathdokuGrid extends ConsumerWidget {
           child: GridView.builder(
             padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: board.size,
             ),
-            itemCount: 16,
+            itemCount: board.size * board.size,
             itemBuilder: (context, index) {
-              final row = index ~/ 4;
-              final col = index % 4;
+              final row = index ~/ board.size;
+              final col = index % board.size;
               return _MathdokuCell(
                 cell: board.getCell(row, col),
                 board: board,
@@ -100,7 +100,7 @@ class _MathdokuCell extends ConsumerWidget {
   BorderSide _side(int dr, int dc) {
     final nr = cell.row + dr;
     final nc = cell.col + dc;
-    if (nr < 0 || nr > 3 || nc < 0 || nc > 3) {
+    if (nr < 0 || nr >= board.size || nc < 0 || nc >= board.size) {
       return const BorderSide(width: 4.0, color: Colors.black87);
     }
     final neighbor = board.getCell(nr, nc);
@@ -116,8 +116,8 @@ class _MathdokuCell extends ConsumerWidget {
   Border _border() => Border(
         top: cell.row == 0 ? BorderSide.none : _side(-1, 0),
         left: cell.col == 0 ? BorderSide.none : _side(0, -1),
-        bottom: cell.row == 3 ? _side(1, 0) : BorderSide.none,
-        right: cell.col == 3 ? _side(0, 1) : BorderSide.none,
+        bottom: cell.row == board.size - 1 ? _side(1, 0) : BorderSide.none,
+        right: cell.col == board.size - 1 ? _side(0, 1) : BorderSide.none,
       );
 
   @override
@@ -139,32 +139,31 @@ class _MathdokuCell extends ConsumerWidget {
               ),
             ),
           ),
-        // Pencil notes — 2×2 mini-grid shown when cell is empty
+        // Pencil notes — 2×2 for 4×4 grid, 2×3 for 6×6 grid
         if (cell.value == 0 && cell.notes.isNotEmpty)
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.fromLTRB(
                   2, cell.showClue ? 18 : 4, 2, 4),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        _NoteDigit(digit: 1, notes: cell.notes),
-                        _NoteDigit(digit: 2, notes: cell.notes),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        _NoteDigit(digit: 3, notes: cell.notes),
-                        _NoteDigit(digit: 4, notes: cell.notes),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              child: Builder(builder: (context) {
+                final noteCols = board.size == 4 ? 2 : 3;
+                final noteFontSize = board.size == 4 ? 11.0 : 9.0;
+                return Column(
+                  children: List.generate(2, (rowIdx) {
+                    return Expanded(
+                      child: Row(
+                        children: List.generate(noteCols, (colIdx) {
+                          return _NoteDigit(
+                            digit: rowIdx * noteCols + colIdx + 1,
+                            notes: cell.notes,
+                            fontSize: noteFontSize,
+                          );
+                        }),
+                      ),
+                    );
+                  }),
+                );
+              }),
             ),
           ),
         // Player digit centred
@@ -223,8 +222,13 @@ class _MathdokuCell extends ConsumerWidget {
 class _NoteDigit extends StatelessWidget {
   final int digit;
   final List<int> notes;
+  final double fontSize;
 
-  const _NoteDigit({required this.digit, required this.notes});
+  const _NoteDigit({
+    required this.digit,
+    required this.notes,
+    this.fontSize = 11,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,7 +238,7 @@ class _NoteDigit extends StatelessWidget {
         child: Text(
           visible ? '$digit' : '',
           style: TextStyle(
-            fontSize: 11,
+            fontSize: fontSize,
             fontWeight: FontWeight.bold,
             color: Colors.blueGrey.shade700,
           ),

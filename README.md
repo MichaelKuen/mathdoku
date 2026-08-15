@@ -1,10 +1,11 @@
 # Mathdoku
 
-A fun, child-friendly **4×4 Mathdoku** math puzzle game built with Flutter.
+A fun, child-friendly **Mathdoku** math puzzle game built with Flutter.
 
-Mathdoku (also known as KenKen or CalcuDoku) challenges players to fill a 4×4 grid with
-digits 1–4 so that every row and column contains each digit exactly once — and every
-highlighted cage of cells satisfies its arithmetic clue.
+Mathdoku (also known as KenKen or CalcuDoku) challenges players to fill a grid with digits
+so that every row and column contains each digit exactly once — and every highlighted cage
+of cells satisfies its arithmetic clue. Play on a 4×4 grid (Easy/Medium) or tackle the
+tougher 6×6 grid on Hard.
 
 **Published by [App Verse Games](https://appversegames.com)**
 
@@ -12,9 +13,10 @@ highlighted cage of cells satisfies its arithmetic clue.
 
 ## Features
 
-- **Two difficulty levels**
-  - **Easy** — addition and multiplication only; single-cell cages are pre-filled as hints
-  - **Medium** — all four operations (+, −, ×, ÷); larger cages, no pre-fills
+- **Three difficulty levels**
+  - **Easy** — 4×4 grid; addition and multiplication only; single-cell cages are pre-filled as hints
+  - **Medium** — 4×4 grid; all four operations (+, −, ×, ÷); larger cages, no pre-fills
+  - **Hard** — 6×6 grid; all four operations; cages up to 6 cells; digits 1–6
 - **Pencil / notes mode** — tap ✏️ Notes to toggle pencil mode; write candidate digits into cells as a 2×2 mini-grid without committing to an answer
 - **Unlimited hints** — tap 💡 Hint at any time; auto-selects the first empty cell if none is chosen
 - **Gentle error feedback** — wrong answers shake and turn red; no game-over penalty
@@ -34,9 +36,9 @@ highlighted cage of cells satisfies its arithmetic clue.
 
 1. Each cage (coloured group of cells) shows a **clue** in its top-left corner — a target
    number and an arithmetic operation (e.g. `6+`, `12×`, `2−`, `2÷`).
-2. Fill every cell with a digit 1–4 so that:
-   - Each **row** contains 1, 2, 3, 4 exactly once.
-   - Each **column** contains 1, 2, 3, 4 exactly once.
+2. Fill every cell with a digit (1–4 on Easy/Medium, 1–6 on Hard) so that:
+   - Each **row** contains each digit exactly once.
+   - Each **column** contains each digit exactly once.
    - The digits in each **cage** satisfy its arithmetic clue.
 3. Tap a cell to select it, then tap a digit on the number pad to enter it.
 4. Use **✏️ Notes** to toggle pencil mode — digit buttons write small candidate numbers
@@ -50,7 +52,7 @@ highlighted cage of cells satisfies its arithmetic clue.
 | Key | Action |
 |---|---|
 | `←` `↑` `→` `↓` | Move cell selection (hold to repeat) |
-| `1` `2` `3` `4` | Enter a digit (main keyboard or numpad) |
+| `1`–`4` (or `1`–`6` on Hard) | Enter a digit (main keyboard or numpad) |
 | `Delete` / `Backspace` | Erase the selected cell |
 | `H` | Hint |
 | `P` | Toggle pencil / notes mode |

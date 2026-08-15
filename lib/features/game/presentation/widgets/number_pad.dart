@@ -9,6 +9,8 @@ const _digitColors = [
   Color(0xFFB5EAD7), // 2 – pastel mint
   Color(0xFFFFDAC1), // 3 – pastel peach
   Color(0xFFC7CEEA), // 4 – pastel lavender
+  Color(0xFFFFEBEE), // 5 – pastel rose
+  Color(0xFFE8F5E9), // 6 – pastel sage
 ];
 
 class NumberPad extends ConsumerWidget {
@@ -18,8 +20,9 @@ class NumberPad extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final board = ref.watch(gameNotifierProvider).board;
 
+    final size = board?.size ?? 4;
     return Row(
-      children: List.generate(4, (i) {
+      children: List.generate(size, (i) {
         final digit = i + 1;
         final isComplete = board != null && _isDigitComplete(board, digit);
 
@@ -44,13 +47,13 @@ class NumberPad extends ConsumerWidget {
 
   bool _isDigitComplete(Board board, int digit) {
     int count = 0;
-    for (int r = 0; r < 4; r++) {
-      for (int c = 0; c < 4; c++) {
+    for (int r = 0; r < board.size; r++) {
+      for (int c = 0; c < board.size; c++) {
         final cell = board.getCell(r, c);
         if (cell.value == digit && !cell.isError) count++;
       }
     }
-    return count >= 4;
+    return count >= board.size;
   }
 }
 

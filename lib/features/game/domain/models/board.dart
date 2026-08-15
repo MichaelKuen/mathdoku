@@ -15,6 +15,8 @@ class Board with _$Board {
 
   const Board._();
 
+  int get size => cells.length;
+
   Cell getCell(int row, int col) => cells[row][col];
   int getSolutionValue(int row, int col) => solution[row][col];
 
