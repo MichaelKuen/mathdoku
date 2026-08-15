@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'features/home/presentation/pages/home_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MathdokuApp()));
 }
 
