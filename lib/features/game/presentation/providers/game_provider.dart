@@ -191,7 +191,11 @@ class GameNotifier extends _$GameNotifier {
       }).toList();
     }).toList();
 
-    state = state.copyWith(board: state.board!.copyWith(cells: newCells));
+    state = state.copyWith(
+      board: state.board!.copyWith(cells: newCells),
+      selectedRow: row,
+      selectedCol: col,
+    );
     _updateGroupStatuses();
     _highlightCells(row, col);
 
