@@ -21,6 +21,20 @@ const List<Color> kCageColors = [
   Color(0xFFE1F5FE), // pastel light-blue
 ];
 
+// Saturated border colours — one per cage, matched to kCageColors hues.
+const List<Color> kCageBorderColors = [
+  Color(0xFFE57373), // red
+  Color(0xFF64B5F6), // blue
+  Color(0xFF81C784), // green
+  Color(0xFFFFD54F), // yellow
+  Color(0xFFBA68C8), // purple
+  Color(0xFF4DD0E1), // cyan
+  Color(0xFFFF8A65), // orange
+  Color(0xFFAED581), // lime
+  Color(0xFF7986CB), // indigo
+  Color(0xFF4FC3F7), // light-blue
+];
+
 class MathdokuGrid extends ConsumerWidget {
   const MathdokuGrid({super.key});
 
@@ -93,7 +107,10 @@ class _MathdokuCell extends ConsumerWidget {
     if (neighbor.cageId == cell.cageId) {
       return BorderSide(width: 1.5, color: Colors.grey.shade500);
     }
-    return const BorderSide(width: 3.5, color: Colors.black87);
+    return BorderSide(
+      width: 3.5,
+      color: kCageBorderColors[cell.cageId % kCageBorderColors.length],
+    );
   }
 
   Border _border() => Border(
