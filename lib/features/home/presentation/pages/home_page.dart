@@ -24,9 +24,9 @@ class HomePage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               Center(
-                child: const Text('🔢', style: TextStyle(fontSize: 90))
+                child: const Text('🔢', style: TextStyle(fontSize: 70))
                     .animate()
                     .scale(duration: 600.ms, curve: Curves.elasticOut),
               ),
@@ -41,14 +41,14 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Center(
                 child: Text(
                   'Math puzzles made fun!',
-                  style: TextStyle(fontSize: 17, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
               const Center(
                 child: Text(
                   'Choose your level:',
@@ -56,7 +56,7 @@ class HomePage extends ConsumerWidget {
                       fontSize: 20, fontWeight: FontWeight.w600),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               _DifficultyButton(
                 emoji: '⭐',
                 label: 'Easy',
@@ -71,7 +71,7 @@ class HomePage extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _DifficultyButton(
                 emoji: '⭐⭐',
                 label: 'Medium',
@@ -86,7 +86,7 @@ class HomePage extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _DifficultyButton(
                 emoji: '⭐⭐⭐',
                 label: 'Hard',
@@ -101,7 +101,7 @@ class HomePage extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 20),
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.of(context).push(
@@ -144,7 +144,7 @@ class _DifficultyButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 80,
+        height: 70,
         decoration: BoxDecoration(
           color: colour,
           borderRadius: BorderRadius.circular(20),
