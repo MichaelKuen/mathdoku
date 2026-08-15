@@ -155,12 +155,28 @@ class GameNotifier extends _$GameNotifier {
   }
 
   void useHint() {
-    if (state.status != GameStatus.playing ||
-        state.selectedRow == null ||
-        state.selectedCol == null) { return; }
+    if (state.status != GameStatus.playing) { return; }
 
-    final row = state.selectedRow!;
-    final col = state.selectedCol!;
+    int? row = state.selectedRow;
+    int? col = state.selectedCol;
+
+    // If no cell selected, or selected cell is already fixed, find first empty cell.
+    if (row == null || col == null || state.board!.getCell(row, col).isFixed) {
+      outer:
+      for (int r = 0; r < 4; r++) {
+        for (int c = 0; c < 4; c++) {
+          final candidate = state.board!.getCell(r, c);
+          if (!candidate.isFixed && (candidate.value == 0 || candidate.isError)) {
+            row = r;
+            col = c;
+            break outer;
+          }
+        }
+      }
+    }
+
+    if (row == null || col == null) { return; }
+
     final cell = state.board!.getCell(row, col);
     if (cell.isFixed) { return; }
 
