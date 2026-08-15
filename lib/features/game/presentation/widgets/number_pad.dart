@@ -132,11 +132,15 @@ class ActionRow extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFD700),
                 foregroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text('💡 Hint', style: TextStyle(fontSize: 16)),
+              child: const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text('💡 Hint', style: TextStyle(fontSize: 16)),
+              ),
             ),
           ),
         ),
@@ -153,13 +157,17 @@ class ActionRow extends ConsumerWidget {
                 foregroundColor: isPencilMode
                     ? Colors.white
                     : Colors.blueGrey.shade700,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: Text(
-                '✏️ ${isPencilMode ? "Notes ON" : "Notes"}',
-                style: const TextStyle(fontSize: 15),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  isPencilMode ? '✏️ Notes ✓' : '✏️ Notes',
+                  style: const TextStyle(fontSize: 15),
+                ),
               ),
             ),
           ),
@@ -172,11 +180,15 @@ class ActionRow extends ConsumerWidget {
               onPressed: () => notifier.eraseCell(),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: Colors.grey.shade400),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text('🧹 Erase', style: TextStyle(fontSize: 16)),
+              child: const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text('🧹 Erase', style: TextStyle(fontSize: 16)),
+              ),
             ),
           ),
         ),
