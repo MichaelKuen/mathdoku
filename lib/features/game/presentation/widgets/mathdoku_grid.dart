@@ -134,7 +134,7 @@ class _MathdokuCell extends ConsumerWidget {
                     ? Colors.red.shade600
                     : cell.isFixed
                         ? Colors.black87
-                        : kPrimary,
+                        : Colors.green.shade700,
               ),
             ),
           ),
