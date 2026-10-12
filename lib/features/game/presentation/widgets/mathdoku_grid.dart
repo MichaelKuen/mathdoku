@@ -8,31 +8,18 @@ import '../../domain/models/cell.dart';
 import '../providers/game_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 
+// Material 100-shade colours — clearly distinct but not overwhelming.
 const List<Color> kCageColors = [
-  Color(0xFFFFEBEE), // pastel red
-  Color(0xFFE3F2FD), // pastel blue
-  Color(0xFFE8F5E9), // pastel green
-  Color(0xFFFFF8E1), // pastel yellow
-  Color(0xFFF3E5F5), // pastel purple
-  Color(0xFFE0F7FA), // pastel cyan
-  Color(0xFFFBE9E7), // pastel orange
-  Color(0xFFF1F8E9), // pastel lime
-  Color(0xFFE8EAF6), // pastel indigo
-  Color(0xFFE1F5FE), // pastel light-blue
-];
-
-// Saturated border colours — one per cage, matched to kCageColors hues.
-const List<Color> kCageBorderColors = [
-  Color(0xFFE57373), // red
-  Color(0xFF64B5F6), // blue
-  Color(0xFF81C784), // green
-  Color(0xFFFFD54F), // yellow
-  Color(0xFFBA68C8), // purple
-  Color(0xFF4DD0E1), // cyan
-  Color(0xFFFF8A65), // orange
-  Color(0xFFAED581), // lime
-  Color(0xFF7986CB), // indigo
-  Color(0xFF4FC3F7), // light-blue
+  Color(0xFFFFCDD2), // red
+  Color(0xFFBBDEFB), // blue
+  Color(0xFFC8E6C9), // green
+  Color(0xFFFFF9C4), // yellow
+  Color(0xFFE1BEE7), // purple
+  Color(0xFFB2EBF2), // cyan
+  Color(0xFFFFCCBC), // deep-orange
+  Color(0xFFDCEDC8), // lime
+  Color(0xFFC5CAE9), // indigo
+  Color(0xFFB3E5FC), // sky
 ];
 
 class MathdokuGrid extends ConsumerWidget {
@@ -47,31 +34,94 @@ class MathdokuGrid extends ConsumerWidget {
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: kPrimary, width: 4),
+          border: Border.all(color: kPrimary, width: 3),
           borderRadius: BorderRadius.circular(8),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(5),
-          child: GridView.builder(
-            padding: EdgeInsets.zero,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: board.size,
+          child: CustomPaint(
+            foregroundPainter: _CageBorderPainter(board),
+            child: GridView.builder(
+              padding: EdgeInsets.zero,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: board.size,
+              ),
+              itemCount: board.size * board.size,
+              itemBuilder: (context, index) {
+                final row = index ~/ board.size;
+                final col = index % board.size;
+                return _MathdokuCell(
+                  cell: board.getCell(row, col),
+                  board: board,
+                );
+              },
             ),
-            itemCount: board.size * board.size,
-            itemBuilder: (context, index) {
-              final row = index ~/ board.size;
-              final col = index % board.size;
-              return _MathdokuCell(
-                cell: board.getCell(row, col),
-                board: board,
-              );
-            },
           ),
         ),
       ),
     );
   }
+}
+
+// Draws faint inner grid lines, then overwrites cage boundaries with thick
+// dark lines so each cage reads as one solid block.
+class _CageBorderPainter extends CustomPainter {
+  final Board board;
+  const _CageBorderPainter(this.board);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cellSize = size.width / board.size;
+
+    final innerPaint = Paint()
+      ..color = const Color(0x22000000)
+      ..strokeWidth = 0.5;
+
+    final cagePaint = Paint()
+      ..color = Colors.black87
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.square;
+
+    // Step 1 — faint lines across the full grid
+    for (int i = 1; i < board.size; i++) {
+      final pos = i * cellSize;
+      canvas.drawLine(Offset(0, pos), Offset(size.width, pos), innerPaint);
+      canvas.drawLine(Offset(pos, 0), Offset(pos, size.height), innerPaint);
+    }
+
+    // Step 2 — thick dark line wherever two adjacent cells are in different cages
+    // Horizontal boundaries
+    for (int r = 0; r < board.size - 1; r++) {
+      for (int c = 0; c < board.size; c++) {
+        if (board.getCell(r, c).cageId != board.getCell(r + 1, c).cageId) {
+          final y = (r + 1) * cellSize;
+          canvas.drawLine(
+            Offset(c * cellSize, y),
+            Offset((c + 1) * cellSize, y),
+            cagePaint,
+          );
+        }
+      }
+    }
+
+    // Vertical boundaries
+    for (int r = 0; r < board.size; r++) {
+      for (int c = 0; c < board.size - 1; c++) {
+        if (board.getCell(r, c).cageId != board.getCell(r, c + 1).cageId) {
+          final x = (c + 1) * cellSize;
+          canvas.drawLine(
+            Offset(x, r * cellSize),
+            Offset(x, (r + 1) * cellSize),
+            cagePaint,
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CageBorderPainter old) => old.board != board;
 }
 
 class _MathdokuCell extends ConsumerWidget {
@@ -81,11 +131,12 @@ class _MathdokuCell extends ConsumerWidget {
   const _MathdokuCell({required this.cell, required this.board});
 
   Color _bgColor() {
-    if (cell.isSelected) return kPrimary.withValues(alpha: 0.50);
-    if (cell.isSameNumber) return kSecondary.withValues(alpha: 0.35);
-    if (cell.isHighlighted) return Colors.grey.withValues(alpha: 0.20);
-
     final base = kCageColors[cell.cageId % kCageColors.length];
+
+    if (cell.isSelected) return kPrimary.withValues(alpha: 0.50);
+    if (cell.isSameNumber) return Color.alphaBlend(kSecondary.withValues(alpha: 0.35), base);
+    if (cell.isHighlighted) return Color.alphaBlend(Colors.black.withValues(alpha: 0.10), base);
+
     if (cell.cageStatus == CellStatus.correct) {
       return Color.alphaBlend(Colors.green.withValues(alpha: 0.22), base);
     }
@@ -95,47 +146,38 @@ class _MathdokuCell extends ConsumerWidget {
     return base;
   }
 
-  // Only draw top and left borders to avoid doubling between adjacent cells.
-  // Bottom is drawn for the last row, right for the last column.
-  BorderSide _side(int dr, int dc) {
-    final nr = cell.row + dr;
-    final nc = cell.col + dc;
-    if (nr < 0 || nr >= board.size || nc < 0 || nc >= board.size) {
-      return const BorderSide(width: 4.0, color: Colors.black87);
-    }
-    final neighbor = board.getCell(nr, nc);
-    if (neighbor.cageId == cell.cageId) {
-      return BorderSide(width: 1.5, color: Colors.grey.shade500);
-    }
-    return BorderSide(
-      width: 3.5,
-      color: kCageBorderColors[cell.cageId % kCageBorderColors.length],
-    );
-  }
-
-  Border _border() => Border(
-        top: cell.row == 0 ? BorderSide.none : _side(-1, 0),
-        left: cell.col == 0 ? BorderSide.none : _side(0, -1),
-        bottom: cell.row == board.size - 1 ? _side(1, 0) : BorderSide.none,
-        right: cell.col == board.size - 1 ? _side(0, 1) : BorderSide.none,
-      );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Smaller clue font on 6×6 grid to fit longer clue strings (e.g. "720×").
+    final clueFontSize = board.size > 4 ? 10.0 : 13.0;
+
     Widget content = Stack(
       children: [
-        // Clue label in top-left corner
+        // Clue label — top-left corner with white backing so it's always readable
         if (cell.showClue)
           Positioned(
             top: 2,
-            left: 3,
-            child: Text(
-              cell.clueText,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                color: Colors.black87,
-                height: 1.0,
+            left: 2,
+            right: 2,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 1),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.60),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                child: Text(
+                  cell.clueText,
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    fontSize: clueFontSize,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black87,
+                    height: 1.0,
+                  ),
+                ),
               ),
             ),
           ),
@@ -166,7 +208,7 @@ class _MathdokuCell extends ConsumerWidget {
               }),
             ),
           ),
-        // Player digit centred
+        // Player digit — centred
         if (cell.value != 0)
           Center(
             child: Text(
@@ -185,7 +227,6 @@ class _MathdokuCell extends ConsumerWidget {
       ],
     );
 
-    // Animations
     if (cell.isSelected) {
       content = content
           .animate(onPlay: (c) => c.repeat(reverse: true))
@@ -209,10 +250,9 @@ class _MathdokuCell extends ConsumerWidget {
         ref.read(gameNotifierProvider.notifier).selectCell(cell.row, cell.col);
       },
       child: Container(
-        decoration: BoxDecoration(
-          color: _bgColor(),
-          border: _border(),
-        ),
+        // No border on individual cells — cage outlines are painted by
+        // _CageBorderPainter so they never double-draw or mis-align.
+        color: _bgColor(),
         child: content,
       ),
     );
