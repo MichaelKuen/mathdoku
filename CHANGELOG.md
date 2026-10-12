@@ -6,6 +6,37 @@ All notable changes to Mathdoku are documented here.
 
 ## [Unreleased]
 
+### Web build for appversegames.com
+The web build is embedded in an iframe at appversegames.com/mathdoku/ and is
+served from `/play/mathdoku/`.
+- Opens straight into an Easy game: no app bar, home page or privacy link
+  (the page around it shows those). Levels are in a **New game** dialog in the
+  stats bar, and **Play Again** starts the next puzzle.
+- Site colours (ivory, navy, amber, teal) and an ivory loading spinner.
+- No requests to Google: Nunito is bundled, CanvasKit is served locally, and
+  emoji are replaced by Material icons on web.
+- `.htaccess` revalidates every file (`no-cache`) instead of caching JS for a
+  year, so players get new builds straight away.
+- The old `?embed=1` mode and its postMessage bridge are removed.
+
+### All platforms
+- **Every puzzle now has exactly one solution.** Previously most Medium, Hard
+  and Insane puzzles had several, so a correct answer could be marked as a
+  mistake. A solver checks each puzzle and the generator tightens clues or
+  splits cages until only one solution is left.
+- The clock stops while the Break Time screen is showing.
+- Board, digits, clues and notes scale with the space available; controls sit
+  beside the board only on wide landscape screens and shrink instead of
+  overflowing.
+- Keyboard: keys keep working after clicking buttons, are ignored while a
+  dialog is open, and the first arrow key selects the first empty cell.
+- Nunito is bundled instead of downloaded at runtime (the privacy text says
+  the app works offline).
+- Removed the Ko-fi link (external link in a kids' game).
+- Linux and macOS builds renamed from sudoku to Mathdoku
+  (`com.appversegames.mathdoku`).
+- Insane level: 6×6, + and × only, no givens.
+
 ### Hard difficulty added — 6×6 grid
 A third difficulty level is now available on the home screen (⭐⭐⭐ Hard).
 - **6×6 grid** with digits 1–6: each row and column must contain each digit exactly once.
