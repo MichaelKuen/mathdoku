@@ -1,10 +1,10 @@
 // Copyright © App Verse Games. All rights reserved.
 import 'package:flutter/material.dart';
 
-const kPrimary    = Color(0xFFFF6B6B);
-const kSecondary  = Color(0xFF4ECDC4);
+const kPrimary = Color(0xFFFF6B6B);
+const kSecondary = Color(0xFF4ECDC4);
 const kBackground = Color(0xFFFFF9F0);
-const kSurface    = Color(0xFFFFFFFF);
+const kSurface = Color(0xFFFFFFFF);
 
 final ThemeData kidsTheme = ThemeData(
   useMaterial3: true,

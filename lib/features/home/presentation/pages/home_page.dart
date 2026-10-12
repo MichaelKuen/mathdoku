@@ -1,7 +1,5 @@
 // Copyright © App Verse Games. All rights reserved.
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/providers/embed_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../game/domain/models/game_state.dart';
@@ -15,22 +13,18 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isEmbedded = ref.watch(isEmbeddedProvider);
-
     return Scaffold(
-      appBar: isEmbedded
-          ? null
-          : AppBar(
-              title: const Text('Mathdoku'),
-              centerTitle: true,
-            ),
+      appBar: AppBar(
+        title: const Text('Mathdoku'),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!kIsWeb) ...[
+              ...[
                 const SizedBox(height: 16),
                 Center(
                   child: const Text('🔢', style: TextStyle(fontSize: 70))
@@ -60,8 +54,7 @@ class HomePage extends ConsumerWidget {
               const Center(
                 child: Text(
                   'Choose your level:',
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
               ),
               const SizedBox(height: 12),

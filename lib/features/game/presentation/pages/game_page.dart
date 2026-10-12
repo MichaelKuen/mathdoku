@@ -1,7 +1,6 @@
 // Copyright © App Verse Games. All rights reserved.
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/providers/embed_provider.dart';
+import '../../../../core/providers/web_mode_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +13,11 @@ import '../../../../core/theme/app_theme.dart';
 import 'break_page.dart';
 
 class GamePage extends ConsumerStatefulWidget {
-  const GamePage({super.key});
+  /// Starts a game at this level when the page opens (used on web, which has
+  /// no home page).
+  final Difficulty? autoStart;
+
+  const GamePage({super.key, this.autoStart});
 
   @override
   ConsumerState<GamePage> createState() => _GamePageState();
@@ -30,6 +33,11 @@ class _GamePageState extends ConsumerState<GamePage> {
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
     _focusNode = FocusNode();
+    final start = widget.autoStart;
+    if (start != null) {
+      Future.microtask(
+          () => ref.read(gameNotifierProvider.notifier).startGame(start));
+    }
   }
 
   @override
@@ -42,7 +50,7 @@ class _GamePageState extends ConsumerState<GamePage> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameNotifierProvider);
-    final isEmbedded = ref.watch(isEmbeddedProvider);
+    final isWeb = ref.watch(webModeProvider);
 
     ref.listen(gameNotifierProvider.select((s) => s.status), (_, next) {
       if (next == GameStatus.won) {
@@ -57,7 +65,7 @@ class _GamePageState extends ConsumerState<GamePage> {
     });
 
     return Scaffold(
-      appBar: isEmbedded
+      appBar: isWeb
           ? null
           : AppBar(
               title: const Text('Mathdoku 🔢'),
@@ -72,52 +80,50 @@ class _GamePageState extends ConsumerState<GamePage> {
         autofocus: true,
         onKeyEvent: _handleKeyEvent,
         child: Stack(
-        children: [
-          gameState.status == GameStatus.loading
-              ? const Center(child: CircularProgressIndicator())
-              : LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth > 600;
-                    return Column(
-                      children: [
-                        _StatsBar(
-                          gameState: gameState,
-                          onHome: isEmbedded
-                              ? () => Navigator.of(context).pop()
-                              : null,
-                        ),
-                        Expanded(
-                          child: isWide
-                              ? _wideLayout()
-                              : _narrowLayout(),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              maxBlastForce: 25,
-              minBlastForce: 10,
-              emissionFrequency: 0.05,
-              numberOfParticles: 40,
-              gravity: 0.12,
-              colors: const [
-                Colors.red,
-                Colors.green,
-                Colors.blue,
-                Colors.yellow,
-                Colors.pink,
-                Colors.orange,
-                Colors.purple,
-                Colors.teal,
-              ],
+          children: [
+            gameState.status == GameStatus.loading || gameState.board == null
+                ? const Center(child: CircularProgressIndicator())
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 600;
+                      return Column(
+                        children: [
+                          _StatsBar(
+                            gameState: gameState,
+                            onNewGame: isWeb
+                                ? () => _showNewGameDialog(context)
+                                : null,
+                          ),
+                          Expanded(
+                            child: isWide ? _wideLayout() : _narrowLayout(),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                maxBlastForce: 25,
+                minBlastForce: 10,
+                emissionFrequency: 0.05,
+                numberOfParticles: 40,
+                gravity: 0.12,
+                colors: const [
+                  Colors.red,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.yellow,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple,
+                  Colors.teal,
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -163,12 +169,18 @@ class _GamePageState extends ConsumerState<GamePage> {
 
     // Number keys 1–6 (main keyboard and numpad), gated to current grid size
     final numKeys = {
-      LogicalKeyboardKey.digit1: 1, LogicalKeyboardKey.numpad1: 1,
-      LogicalKeyboardKey.digit2: 2, LogicalKeyboardKey.numpad2: 2,
-      LogicalKeyboardKey.digit3: 3, LogicalKeyboardKey.numpad3: 3,
-      LogicalKeyboardKey.digit4: 4, LogicalKeyboardKey.numpad4: 4,
-      LogicalKeyboardKey.digit5: 5, LogicalKeyboardKey.numpad5: 5,
-      LogicalKeyboardKey.digit6: 6, LogicalKeyboardKey.numpad6: 6,
+      LogicalKeyboardKey.digit1: 1,
+      LogicalKeyboardKey.numpad1: 1,
+      LogicalKeyboardKey.digit2: 2,
+      LogicalKeyboardKey.numpad2: 2,
+      LogicalKeyboardKey.digit3: 3,
+      LogicalKeyboardKey.numpad3: 3,
+      LogicalKeyboardKey.digit4: 4,
+      LogicalKeyboardKey.numpad4: 4,
+      LogicalKeyboardKey.digit5: 5,
+      LogicalKeyboardKey.numpad5: 5,
+      LogicalKeyboardKey.digit6: 6,
+      LogicalKeyboardKey.numpad6: 6,
     };
     final digit = numKeys[key];
     if (digit != null && digit <= (gameState.board?.size ?? 4)) {
@@ -263,10 +275,8 @@ class _GamePageState extends ConsumerState<GamePage> {
   }
 
   void _showWinDialog(BuildContext context, GameState state) {
-    final minutes =
-        (state.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds =
-        (state.elapsedSeconds % 60).toString().padLeft(2, '0');
+    final minutes = (state.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (state.elapsedSeconds % 60).toString().padLeft(2, '0');
 
     showDialog(
       context: context,
@@ -304,7 +314,14 @@ class _GamePageState extends ConsumerState<GamePage> {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                Navigator.of(context).pop();
+                if (ref.read(webModeProvider)) {
+                  // Web has no home page: start the next puzzle right here.
+                  ref
+                      .read(gameNotifierProvider.notifier)
+                      .startGame(state.difficulty);
+                } else {
+                  Navigator.of(context).pop();
+                }
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(200, 52),
@@ -322,31 +339,74 @@ class _GamePageState extends ConsumerState<GamePage> {
       ),
     );
   }
+
+  void _showNewGameDialog(BuildContext context) {
+    final current = ref.read(gameNotifierProvider).difficulty;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('New game'),
+        children: [
+          for (final (level, label, subtitle) in kLevels)
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                ref.read(gameNotifierProvider.notifier).startGame(level);
+              },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(subtitle,
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade700)),
+                      ],
+                    ),
+                  ),
+                  if (level == current) const Icon(Icons.check),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
+
+/// The levels with the labels shown on the home page and the New game dialog.
+const kLevels = [
+  (Difficulty.easy, 'Easy', 'Addition & multiplication only'),
+  (Difficulty.medium, 'Medium', 'All four operations'),
+  (Difficulty.hard, 'Hard', '6×6 grid — all operations'),
+  (Difficulty.insane, 'Insane', '6×6 grid — giant cages, no mercy'),
+];
 
 class _StatsBar extends StatelessWidget {
   final GameState gameState;
-  final VoidCallback? onHome;
+  final VoidCallback? onNewGame;
 
-  const _StatsBar({required this.gameState, this.onHome});
+  const _StatsBar({required this.gameState, this.onNewGame});
 
   @override
   Widget build(BuildContext context) {
-    final minutes =
-        (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds =
-        (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
+    final minutes = (gameState.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
 
     return Container(
       color: kPrimary.withValues(alpha: 0.08),
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       child: Row(
         children: [
-          if (onHome != null) ...[
+          if (onNewGame != null) ...[
             IconButton(
-              icon: const Icon(Icons.home, size: 22),
-              tooltip: 'Home',
-              onPressed: onHome,
+              icon: const Icon(Icons.add_circle_outline, size: 22),
+              tooltip: 'New game',
+              onPressed: onNewGame,
               visualDensity: VisualDensity.compact,
             ),
             const SizedBox(width: 4),
