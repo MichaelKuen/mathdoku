@@ -51,9 +51,12 @@ class MathdokuGrid extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final row = index ~/ board.size;
                 final col = index % board.size;
-                return _MathdokuCell(
-                  cell: board.getCell(row, col),
-                  board: board,
+                return LayoutBuilder(
+                  builder: (context, c) => _MathdokuCell(
+                    cell: board.getCell(row, col),
+                    board: board,
+                    cellSize: c.maxWidth,
+                  ),
                 );
               },
             ),
@@ -127,15 +130,24 @@ class _CageBorderPainter extends CustomPainter {
 class _MathdokuCell extends ConsumerWidget {
   final Cell cell;
   final Board board;
+  final double cellSize;
 
-  const _MathdokuCell({required this.cell, required this.board});
+  const _MathdokuCell({
+    required this.cell,
+    required this.board,
+    required this.cellSize,
+  });
 
   Color _bgColor() {
     final base = kCageColors[cell.cageId % kCageColors.length];
 
     if (cell.isSelected) return kPrimary.withValues(alpha: 0.50);
-    if (cell.isSameNumber) return Color.alphaBlend(kSecondary.withValues(alpha: 0.35), base);
-    if (cell.isHighlighted) return Color.alphaBlend(Colors.black.withValues(alpha: 0.10), base);
+    if (cell.isSameNumber) {
+      return Color.alphaBlend(kSecondary.withValues(alpha: 0.35), base);
+    }
+    if (cell.isHighlighted) {
+      return Color.alphaBlend(Colors.black.withValues(alpha: 0.10), base);
+    }
 
     if (cell.cageStatus == CellStatus.correct) {
       return Color.alphaBlend(Colors.green.withValues(alpha: 0.22), base);
@@ -148,8 +160,11 @@ class _MathdokuCell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Smaller clue font on 6×6 grid to fit longer clue strings (e.g. "720×").
-    final clueFontSize = board.size > 4 ? 10.0 : 13.0;
+    // Text scales with the cell. The 6×6 grid's clue font is a bit larger for
+    // its cell size so long clues (e.g. "720×") stay readable.
+    final clueFontSize = cellSize * (board.size > 4 ? 0.19 : 0.16);
+    final noteFontSize = cellSize * (board.size > 4 ? 0.16 : 0.14);
+    final digitFontSize = cellSize * 0.42;
 
     Widget content = Stack(
       children: [
@@ -186,10 +201,9 @@ class _MathdokuCell extends ConsumerWidget {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.fromLTRB(
-                  2, cell.showClue ? 18 : 4, 2, 4),
+                  2, cell.showClue ? clueFontSize + 5 : 4, 2, 4),
               child: Builder(builder: (context) {
                 final noteCols = board.size == 4 ? 2 : 3;
-                final noteFontSize = board.size == 4 ? 11.0 : 9.0;
                 return Column(
                   children: List.generate(2, (rowIdx) {
                     return Expanded(
@@ -214,7 +228,7 @@ class _MathdokuCell extends ConsumerWidget {
             child: Text(
               '${cell.value}',
               style: TextStyle(
-                fontSize: 26,
+                fontSize: digitFontSize,
                 fontWeight: FontWeight.bold,
                 color: cell.isError
                     ? Colors.red.shade600
@@ -228,9 +242,7 @@ class _MathdokuCell extends ConsumerWidget {
     );
 
     if (cell.isSelected) {
-      content = content
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scale(
+      content = content.animate(onPlay: (c) => c.repeat(reverse: true)).scale(
             begin: const Offset(1.0, 1.0),
             end: const Offset(1.06, 1.06),
             duration: 700.ms,

@@ -44,10 +44,12 @@ void main() {
     await tester.tap(find.byTooltip('New game'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
+    Finder inDialog(String text) => find.descendant(
+        of: find.byType(SimpleDialog), matching: find.text(text));
     for (final level in ['Easy', 'Medium', 'Hard', 'Insane']) {
-      expect(find.text(level), findsOneWidget);
+      expect(inDialog(level), findsOneWidget);
     }
-    await tester.tap(find.text('Hard'));
+    await tester.tap(inDialog('Hard'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     final state = container.read(gameNotifierProvider);

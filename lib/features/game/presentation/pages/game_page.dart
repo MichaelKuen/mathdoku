@@ -83,23 +83,17 @@ class _GamePageState extends ConsumerState<GamePage> {
           children: [
             gameState.status == GameStatus.loading || gameState.board == null
                 ? const Center(child: CircularProgressIndicator())
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isWide = constraints.maxWidth > 600;
-                      return Column(
-                        children: [
-                          _StatsBar(
-                            gameState: gameState,
-                            onNewGame: isWeb
-                                ? () => _showNewGameDialog(context)
-                                : null,
-                          ),
-                          Expanded(
-                            child: isWide ? _wideLayout() : _narrowLayout(),
-                          ),
-                        ],
-                      );
-                    },
+                : Column(
+                    children: [
+                      _StatsBar(
+                        gameState: gameState,
+                        onNewGame:
+                            isWeb ? () => _showNewGameDialog(context) : null,
+                      ),
+                      Expanded(
+                        child: LayoutBuilder(builder: _playArea),
+                      ),
+                    ],
                   ),
             Align(
               alignment: Alignment.topCenter,
@@ -210,67 +204,69 @@ class _GamePageState extends ConsumerState<GamePage> {
     return KeyEventResult.ignored;
   }
 
-  Widget _wideLayout() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+  // Sizes come from the space the page actually gets (inside the iframe on
+  // web), never from the device screen.
+  static const _gap = 12.0;
+  static const _maxBoard = 640.0;
+
+  Widget _playArea(BuildContext context, BoxConstraints c) {
+    final w = c.maxWidth;
+    final h = c.maxHeight;
+
+    // Controls beside the board only when there is room for both.
+    if (w >= 720 && w > h) {
+      final panelWidth = (w * 0.32).clamp(240.0, 340.0);
+      final board = [w - panelWidth - 3 * _gap, h - 2 * _gap, _maxBoard]
+          .reduce((a, b) => a < b ? a : b);
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox.square(dimension: board, child: const MathdokuGrid()),
+          const SizedBox(width: _gap),
+          SizedBox(
+            width: panelWidth,
+            height: board,
+            child: _controls(panelWidth),
+          ),
+        ],
+      );
+    }
+
+    // Stacked: board on top, controls in a band underneath that shrinks on
+    // short screens instead of overflowing.
+    final controlsHeight = (h * 0.28).clamp(96.0, 150.0);
+    final board = [w - 2 * _gap, h - controlsHeight - 3 * _gap, _maxBoard]
+        .reduce((a, b) => a < b ? a : b);
+    final controlsWidth = (w - 2 * _gap).clamp(0.0, 520.0);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(
-          child: LayoutBuilder(
-            builder: (ctx, c) {
-              final size = (c.maxHeight - 32).clamp(0.0, c.maxWidth - 32);
-              return Center(
-                child: SizedBox.square(
-                  dimension: size,
-                  child: const MathdokuGrid(),
-                ),
-              );
-            },
-          ),
-        ),
-        Container(
-          width: 300,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              NumberPad(),
-              SizedBox(height: 20),
-              ActionRow(),
-            ],
-          ),
+        SizedBox.square(dimension: board, child: const MathdokuGrid()),
+        const SizedBox(height: _gap),
+        SizedBox(
+          width: controlsWidth,
+          height: controlsHeight,
+          child: _controls(controlsWidth),
         ),
       ],
     );
   }
 
-  Widget _narrowLayout() {
-    return Column(
-      children: [
-        Expanded(
-          child: LayoutBuilder(
-            builder: (ctx, c) {
-              final size = (c.maxWidth - 32).clamp(0.0, c.maxHeight - 32);
-              return Center(
-                child: SizedBox.square(
-                  dimension: size,
-                  child: const MathdokuGrid(),
-                ),
-              );
-            },
-          ),
+  /// Number pad and action buttons at their natural size, scaled down to fit.
+  Widget _controls(double width) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: SizedBox(
+        width: width,
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NumberPad(),
+            SizedBox(height: 10),
+            ActionRow(),
+          ],
         ),
-        const SizedBox(height: 12),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: NumberPad(),
-        ),
-        const SizedBox(height: 12),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: ActionRow(),
-        ),
-        const SizedBox(height: 28),
-      ],
+      ),
     );
   }
 
@@ -403,28 +399,60 @@ class _StatsBar extends StatelessWidget {
       child: Row(
         children: [
           if (onNewGame != null) ...[
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, size: 22),
-              tooltip: 'New game',
-              onPressed: onNewGame,
-              visualDensity: VisualDensity.compact,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Tooltip(
+                  message: 'New game',
+                  child: TextButton.icon(
+                    onPressed: onNewGame,
+                    icon: const Icon(Icons.add_circle_outline, size: 22),
+                    label: Text(
+                      kLevels
+                          .firstWhere((l) => l.$1 == gameState.difficulty)
+                          .$2,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 8),
           ],
-          const Icon(Icons.timer_outlined, size: 20),
-          const SizedBox(width: 6),
-          Text(
-            '$minutes:$seconds',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  const Icon(Icons.timer_outlined, size: 20),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$minutes:$seconds',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
           ),
           const Spacer(),
-          const Text('Oops: ', style: TextStyle(fontSize: 18)),
-          Text(
-            '${gameState.mistakes}',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: kPrimary,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  const Text('Oops: ', style: TextStyle(fontSize: 18)),
+                  Text(
+                    '${gameState.mistakes}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: kPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
