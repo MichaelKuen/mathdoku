@@ -50,8 +50,9 @@ class GameNotifier extends _$GameNotifier {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      // The clock stops while the break screen is showing.
       if (state.status == GameStatus.playing) {
+        state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
         final next = state.playSecondsThisSegment + 1;
         if (next >= _breakInterval) {
           state = state.copyWith(
