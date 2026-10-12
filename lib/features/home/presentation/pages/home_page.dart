@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/providers/embed_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../game/domain/models/game_state.dart';
 import '../../../game/presentation/providers/game_provider.dart';
 import '../../../game/presentation/pages/game_page.dart';
@@ -126,31 +125,6 @@ class HomePage extends ConsumerWidget {
                 },
               ),
               const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final uri = Uri.parse('https://ko-fi.com/O3A323W17K');
-                    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                      await launchUrl(uri);
-                    }
-                  },
-                  icon: const Text('☕', style: TextStyle(fontSize: 16)),
-                  label: const Text(
-                    'Support me on Ko-fi',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF72A4F2),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24)),
-                    elevation: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.of(context).push(
