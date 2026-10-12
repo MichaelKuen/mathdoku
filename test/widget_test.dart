@@ -52,7 +52,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     expect(find.text('You solved the puzzle!'), findsOneWidget);
 
-    await tester.tap(find.text('Play Again! ▶'));
+    await tester.tap(find.text('Play Again!'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(HomePage), findsOneWidget);

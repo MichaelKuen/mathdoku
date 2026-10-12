@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/web_mode_provider.dart';
+import '../../../../core/widgets/glyph.dart';
 import '../providers/game_provider.dart';
 
 class BreakPage extends ConsumerWidget {
@@ -20,7 +22,8 @@ class BreakPage extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('😊', style: TextStyle(fontSize: 100))
+                  const Glyph('😊', Icons.sentiment_very_satisfied,
+                          size: 100, color: Color(0xFFE67E22))
                       .animate(onPlay: (c) => c.repeat(reverse: true))
                       .scale(
                         begin: const Offset(1.0, 1.0),
@@ -39,12 +42,16 @@ class BreakPage extends ConsumerWidget {
                     ),
                   ).animate().fadeIn(duration: 400.ms),
                   const SizedBox(height: 20),
-                  const Text(
-                    "You've been playing for 10 minutes.\n\n"
-                    "Time to rest your eyes! 👀\n\n"
-                    "Stretch, get some water,\nand come back when you're ready! 😄",
+                  Text(
+                    ref.watch(webModeProvider)
+                        ? "You've been playing for 10 minutes.\n\n"
+                            "Time to rest your eyes!\n\n"
+                            "Stretch, get some water,\nand come back when you're ready!"
+                        : "You've been playing for 10 minutes.\n\n"
+                            "Time to rest your eyes! 👀\n\n"
+                            "Stretch, get some water,\nand come back when you're ready! 😄",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       color: Color(0xFF555555),
                       height: 1.7,
@@ -70,7 +77,14 @@ class BreakPage extends ConsumerWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    child: const Text("I'm Ready! ▶"),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("I'm Ready!"),
+                        SizedBox(width: 6),
+                        Glyph('▶', Icons.play_arrow, size: 22),
+                      ],
+                    ),
                   )
                       .animate()
                       .fadeIn(delay: 600.ms)

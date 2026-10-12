@@ -1,6 +1,7 @@
 // Copyright © App Verse Games. All rights reserved.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/glyph.dart';
 import '../../domain/models/board.dart';
 import '../providers/game_provider.dart';
 
@@ -98,14 +99,7 @@ class _DigitButton extends StatelessWidget {
                 const Positioned(
                   top: 4,
                   right: 6,
-                  child: Text(
-                    '✓',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Glyph('✓', Icons.check, size: 12, color: Colors.green),
                 ),
             ],
           ),
@@ -142,7 +136,7 @@ class ActionRow extends ConsumerWidget {
               ),
               child: const FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text('💡 Hint', style: TextStyle(fontSize: 16)),
+                child: _ActionLabel('💡', Icons.lightbulb_outline, 'Hint'),
               ),
             ),
           ),
@@ -167,10 +161,8 @@ class ActionRow extends ConsumerWidget {
               ),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text(
-                  isPencilMode ? '✏️ Notes ✓' : '✏️ Notes',
-                  style: const TextStyle(fontSize: 15),
-                ),
+                child: _ActionLabel('✏️', Icons.edit_outlined, 'Notes',
+                    checked: isPencilMode, fontSize: 15),
               ),
             ),
           ),
@@ -190,11 +182,38 @@ class ActionRow extends ConsumerWidget {
               ),
               child: const FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text('🧹 Erase', style: TextStyle(fontSize: 16)),
+                child: _ActionLabel('🧹', Icons.cleaning_services_outlined, 'Erase'),
               ),
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _ActionLabel extends StatelessWidget {
+  final String emoji;
+  final IconData icon;
+  final String text;
+  final bool checked;
+  final double fontSize;
+
+  const _ActionLabel(this.emoji, this.icon, this.text,
+      {this.checked = false, this.fontSize = 16});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Glyph(emoji, icon, size: fontSize + 2),
+        const SizedBox(width: 4),
+        Text(text, style: TextStyle(fontSize: fontSize)),
+        if (checked) ...[
+          const SizedBox(width: 4),
+          Glyph('✓', Icons.check, size: fontSize),
+        ],
       ],
     );
   }

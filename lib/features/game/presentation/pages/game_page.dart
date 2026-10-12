@@ -4,6 +4,7 @@ import '../../../../core/providers/web_mode_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/glyph.dart';
 import 'package:confetti/confetti.dart';
 import '../providers/game_provider.dart';
 import '../widgets/mathdoku_grid.dart';
@@ -281,17 +282,24 @@ class _GamePageState extends ConsumerState<GamePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🏆', style: TextStyle(fontSize: 80))
+            const Glyph('🏆', Icons.emoji_events, size: 80, color: Colors.amber)
                 .animate()
                 .scale(duration: 700.ms, curve: Curves.elasticOut),
             const SizedBox(height: 16),
-            const Text(
-              'Amazing Work! 🎉',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Amazing Work!',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(width: 6),
+                Glyph('🎉', Icons.celebration, size: 26, color: Colors.green),
+              ],
             ).animate().fadeIn(delay: 300.ms),
             const SizedBox(height: 8),
             const Text(
@@ -325,9 +333,13 @@ class _GamePageState extends ConsumerState<GamePage> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                'Play Again! ▶',
-                style: TextStyle(fontSize: 18),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Play Again!', style: TextStyle(fontSize: 18)),
+                  SizedBox(width: 6),
+                  Glyph('▶', Icons.play_arrow, size: 18),
+                ],
               ),
             ).animate().fadeIn(delay: 800.ms).moveY(begin: 20, end: 0),
           ),
