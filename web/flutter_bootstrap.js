@@ -1,13 +1,11 @@
 {{flutter_js}}
 {{flutter_build_config}}
 
-window.addEventListener('load', function () {
-  _flutter.loader.load({
-    onEntrypointLoaded: async function (engineInitializer) {
-      let appRunner = await engineInitializer.initializeEngine({
-        hostElement: document.querySelector('#game-embed'),
-      });
-      await appRunner.runApp();
-    }
-  });
+_flutter.loader.load({
+  onEntrypointLoaded: async function (engineInitializer) {
+    const appRunner = await engineInitializer.initializeEngine();
+    await appRunner.runApp();
+    const el = document.getElementById('loading');
+    if (el) el.remove();
+  },
 });
