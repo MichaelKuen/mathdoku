@@ -74,6 +74,16 @@ void main() {
           reason: '$label: something scrolls');
     }
 
+    // The mistake count ends at the right edge of the stats bar.
+    final oops = tester.getRect(find.text('Oops: '));
+    final count = tester.getRect(find.descendant(
+        of: find.ancestor(
+            of: find.text('Oops: '), matching: find.byType(Row)).first,
+        matching: find.text('0')));
+    expect(count.left, closeTo(oops.right, 1), reason: label);
+    expect(count.right, greaterThan(size.width - 30),
+        reason: '$label: mistakes not on the right ($oops $count)');
+
     if (web) {
       final shortest = size.shortestSide;
       final minBoard = shortest >= 600 ? 400.0 : 280.0;

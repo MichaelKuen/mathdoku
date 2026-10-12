@@ -423,61 +423,59 @@ class _StatsBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       child: Row(
         children: [
-          if (onNewGame != null) ...[
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Tooltip(
-                  message: 'New game',
-                  child: TextButton.icon(
-                    onPressed: onNewGame,
-                    icon: const Icon(Icons.add_circle_outline, size: 22),
-                    label: Text(
-                      kLevels
-                          .firstWhere((l) => l.$1 == gameState.difficulty)
-                          .$2,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+          // Left side shrinks on narrow screens; the mistake count stays right.
+          Expanded(
+            child: Row(
+              children: [
+                if (onNewGame != null) ...[
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Tooltip(
+                        message: 'New game',
+                        child: TextButton.icon(
+                          onPressed: onNewGame,
+                          icon: const Icon(Icons.add_circle_outline, size: 22),
+                          label: Text(
+                            kLevels
+                                .firstWhere((l) => l.$1 == gameState.difficulty)
+                                .$2,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.timer_outlined, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$minutes:$seconds',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                children: [
-                  const Icon(Icons.timer_outlined, size: 20),
-                  const SizedBox(width: 6),
-                  Text(
-                    '$minutes:$seconds',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
-          const Spacer(),
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                children: [
-                  const Text('Oops: ', style: TextStyle(fontSize: 18)),
-                  Text(
-                    '${gameState.mistakes}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: GameColors.of(context).mistakes,
-                    ),
-                  ),
-                ],
-              ),
+          const SizedBox(width: 8),
+          const Text('Oops: ', style: TextStyle(fontSize: 18)),
+          Text(
+            '${gameState.mistakes}',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: GameColors.of(context).mistakes,
             ),
           ),
         ],
