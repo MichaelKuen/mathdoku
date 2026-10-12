@@ -1,6 +1,5 @@
 // Copyright © App Verse Games. All rights reserved.
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const kPrimary    = Color(0xFFFF6B6B);
 const kSecondary  = Color(0xFF4ECDC4);
@@ -9,6 +8,7 @@ const kSurface    = Color(0xFFFFFFFF);
 
 final ThemeData kidsTheme = ThemeData(
   useMaterial3: true,
+  fontFamily: 'Nunito',
   colorScheme: ColorScheme.fromSeed(
     seedColor: kPrimary,
     secondary: kSecondary,
@@ -16,12 +16,12 @@ final ThemeData kidsTheme = ThemeData(
     brightness: Brightness.light,
   ).copyWith(surface: kBackground),
   scaffoldBackgroundColor: kBackground,
-  textTheme: GoogleFonts.nunitoTextTheme(),
   appBarTheme: AppBarTheme(
     backgroundColor: kPrimary,
     foregroundColor: Colors.white,
     elevation: 0,
-    titleTextStyle: GoogleFonts.nunito(
+    titleTextStyle: const TextStyle(
+      fontFamily: 'Nunito',
       fontSize: 22,
       fontWeight: FontWeight.bold,
       color: Colors.white,
