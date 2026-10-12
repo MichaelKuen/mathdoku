@@ -1,5 +1,7 @@
 // Copyright © App Verse Games. All rights reserved.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/providers/embed_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,6 +42,7 @@ class _GamePageState extends ConsumerState<GamePage> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameNotifierProvider);
+    final isEmbedded = ref.watch(isEmbeddedProvider);
 
     ref.listen(gameNotifierProvider.select((s) => s.status), (_, next) {
       if (next == GameStatus.won) {
@@ -54,14 +57,16 @@ class _GamePageState extends ConsumerState<GamePage> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mathdoku 🔢'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.home),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      appBar: isEmbedded
+          ? null
+          : AppBar(
+              title: const Text('Mathdoku 🔢'),
+              centerTitle: true,
+              leading: IconButton(
+                icon: const Icon(Icons.home),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
       body: Focus(
         focusNode: _focusNode,
         autofocus: true,
@@ -75,7 +80,12 @@ class _GamePageState extends ConsumerState<GamePage> {
                     final isWide = constraints.maxWidth > 600;
                     return Column(
                       children: [
-                        _StatsBar(gameState: gameState),
+                        _StatsBar(
+                          gameState: gameState,
+                          onHome: isEmbedded
+                              ? () => Navigator.of(context).pop()
+                              : null,
+                        ),
                         Expanded(
                           child: isWide
                               ? _wideLayout()
@@ -316,7 +326,9 @@ class _GamePageState extends ConsumerState<GamePage> {
 
 class _StatsBar extends StatelessWidget {
   final GameState gameState;
-  const _StatsBar({required this.gameState});
+  final VoidCallback? onHome;
+
+  const _StatsBar({required this.gameState, this.onHome});
 
   @override
   Widget build(BuildContext context) {
@@ -327,29 +339,34 @@ class _StatsBar extends StatelessWidget {
 
     return Container(
       color: kPrimary.withValues(alpha: 0.08),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(children: [
-            const Icon(Icons.timer_outlined, size: 20),
-            const SizedBox(width: 6),
-            Text(
-              '$minutes:$seconds',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          if (onHome != null) ...[
+            IconButton(
+              icon: const Icon(Icons.home, size: 22),
+              tooltip: 'Home',
+              onPressed: onHome,
+              visualDensity: VisualDensity.compact,
             ),
-          ]),
-          Row(children: [
-            const Text('Oops: ', style: TextStyle(fontSize: 18)),
-            Text(
-              '${gameState.mistakes}',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: kPrimary,
-              ),
+            const SizedBox(width: 4),
+          ],
+          const Icon(Icons.timer_outlined, size: 20),
+          const SizedBox(width: 6),
+          Text(
+            '$minutes:$seconds',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          const Text('Oops: ', style: TextStyle(fontSize: 18)),
+          Text(
+            '${gameState.mistakes}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: kPrimary,
             ),
-          ]),
+          ),
         ],
       ),
     );

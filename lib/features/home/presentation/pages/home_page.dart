@@ -1,7 +1,10 @@
 // Copyright © App Verse Games. All rights reserved.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/providers/embed_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../game/domain/models/game_state.dart';
 import '../../../game/presentation/providers/game_provider.dart';
 import '../../../game/presentation/pages/game_page.dart';
@@ -13,41 +16,47 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isEmbedded = ref.watch(isEmbeddedProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mathdoku'),
-        centerTitle: true,
-      ),
+      appBar: isEmbedded
+          ? null
+          : AppBar(
+              title: const Text('Mathdoku'),
+              centerTitle: true,
+            ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 16),
-              Center(
-                child: const Text('🔢', style: TextStyle(fontSize: 70))
-                    .animate()
-                    .scale(duration: 600.ms, curve: Curves.elasticOut),
-              ),
-              const SizedBox(height: 16),
-              const Center(
-                child: Text(
-                  'Mathdoku',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: kPrimary,
+              if (!kIsWeb) ...[
+                const SizedBox(height: 16),
+                Center(
+                  child: const Text('🔢', style: TextStyle(fontSize: 70))
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut),
+                ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: Text(
+                    'Mathdoku',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: kPrimary,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Center(
-                child: Text(
-                  'Math puzzles made fun!',
-                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                const SizedBox(height: 6),
+                Center(
+                  child: Text(
+                    'Math puzzles made fun!',
+                    style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                  ),
                 ),
-              ),
+              ],
               const SizedBox(height: 24),
               const Center(
                 child: Text(
@@ -101,7 +110,47 @@ class HomePage extends ConsumerWidget {
                   );
                 },
               ),
+              const SizedBox(height: 10),
+              _DifficultyButton(
+                emoji: '💀',
+                label: 'Insane',
+                subtitle: '6×6 grid — giant cages, no mercy',
+                colour: const Color(0xFFFF5252),
+                onTap: () {
+                  ref
+                      .read(gameNotifierProvider.notifier)
+                      .startGame(Difficulty.insane);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const GamePage()),
+                  );
+                },
+              ),
               const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final uri = Uri.parse('https://ko-fi.com/O3A323W17K');
+                    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                      await launchUrl(uri);
+                    }
+                  },
+                  icon: const Text('☕', style: TextStyle(fontSize: 16)),
+                  label: const Text(
+                    'Support me on Ko-fi',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF72A4F2),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24)),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.of(context).push(
@@ -144,7 +193,7 @@ class _DifficultyButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 70,
+        constraints: const BoxConstraints(minHeight: 70),
         decoration: BoxDecoration(
           color: colour,
           borderRadius: BorderRadius.circular(20),
@@ -156,27 +205,32 @@ class _DifficultyButton extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
-            const SizedBox(width: 16),
+            Text(emoji, style: const TextStyle(fontSize: 26)),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.grey.shade700,
                     ),
                   ),
