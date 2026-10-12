@@ -4,9 +4,12 @@ import '../models/board.dart';
 import '../models/cage.dart';
 import '../models/cell.dart';
 import '../models/game_state.dart';
+import 'mathdoku_solver.dart';
 
 class MathdokuGenerator {
-  final _random = Random();
+  final Random _random;
+
+  MathdokuGenerator({Random? random}) : _random = random ?? Random();
 
   // Grid size: 4 for Easy/Medium, 6 for Hard/Insane.
   int _sizeFor(Difficulty d) =>
@@ -19,12 +22,19 @@ class MathdokuGenerator {
     _solveLatinSquare(grid, 0, 0, size);
 
     final solution = List.generate(size, (r) => List<int>.from(grid[r]));
-    final (cages, cageIdGrid) = _generateCages(grid, difficulty, size);
+    final cages =
+        _makeUnique(solution, _generateCages(difficulty, size), difficulty);
+
+    final cageIdGrid = List.generate(size, (_) => List.filled(size, -1));
+    for (final cage in cages) {
+      for (final p in cage.cells) {
+        cageIdGrid[p.row][p.col] = cage.id;
+      }
+    }
 
     final cells = List.generate(size, (r) {
       return List.generate(size, (c) {
-        final cageId = cageIdGrid[r][c];
-        final cage = cages.firstWhere((g) => g.id == cageId);
+        final cage = cages[cageIdGrid[r][c]];
         final isTopLeft =
             cage.cells.first.row == r && cage.cells.first.col == c;
         final isGiven = cage.cells.length == 1 &&
@@ -33,7 +43,7 @@ class MathdokuGenerator {
           value: isGiven ? solution[r][c] : 0,
           row: r,
           col: c,
-          cageId: cageId,
+          cageId: cage.id,
           isFixed: isGiven,
           showClue: isTopLeft,
           clueText: isTopLeft ? _clueText(cage) : '',
@@ -76,29 +86,29 @@ class MathdokuGenerator {
 
   // ── Cage generation ─────────────────────────────────────────────────────────
 
-  (List<Cage>, List<List<int>>) _generateCages(
-      List<List<int>> grid, Difficulty difficulty, int size) {
-    final cageIdGrid = List.generate(size, (_) => List.filled(size, -1));
+  List<List<(int, int)>> _generateCages(Difficulty difficulty, int size) {
+    final taken = List.generate(size, (_) => List.filled(size, false));
     final positions = [
       for (int r = 0; r < size; r++)
         for (int c = 0; c < size; c++) (r, c),
     ]..shuffle(_random);
 
-    final cages = <Cage>[];
-    int nextId = 0;
+    final groups = <List<(int, int)>>[];
 
     for (final (sr, sc) in positions) {
-      if (cageIdGrid[sr][sc] != -1) continue;
+      if (taken[sr][sc]) continue;
 
+      // Bigger starting cages only get split again to make the puzzle unique,
+      // and make that search much slower.
       final int maxSize = switch (difficulty) {
         Difficulty.easy => _random.nextDouble() < 0.5 ? 1 : 2,
         Difficulty.medium => 4,
-        Difficulty.hard => 6,
-        Difficulty.insane => 8,
+        Difficulty.hard => 4,
+        Difficulty.insane => 5,
       };
 
       final cageCells = <(int, int)>[(sr, sc)];
-      cageIdGrid[sr][sc] = nextId;
+      taken[sr][sc] = true;
 
       while (cageCells.length < maxSize) {
         final frontier = <(int, int)>[];
@@ -110,7 +120,7 @@ class MathdokuGenerator {
                 nr < size &&
                 nc >= 0 &&
                 nc < size &&
-                cageIdGrid[nr][nc] == -1 &&
+                !taken[nr][nc] &&
                 !frontier.contains((nr, nc))) {
               frontier.add((nr, nc));
             }
@@ -119,53 +129,147 @@ class MathdokuGenerator {
         if (frontier.isEmpty) break;
         final next = frontier[_random.nextInt(frontier.length)];
         cageCells.add(next);
-        cageIdGrid[next.$1][next.$2] = nextId;
+        taken[next.$1][next.$2] = true;
       }
 
-      cageCells.sort(
-          (a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
-
-      final (op, target) = _assignOperation(grid, cageCells, difficulty);
-
-      cages.add(Cage(
-        id: nextId,
-        cells: cageCells.map((p) => CagePos(row: p.$1, col: p.$2)).toList(),
-        operation: op,
-        target: target,
-      ));
-      nextId++;
+      groups.add(cageCells);
     }
 
-    return (cages, cageIdGrid);
+    return groups;
+  }
+
+  // ── Uniqueness ──────────────────────────────────────────────────────────────
+
+  /// Assigns operations, then tightens the puzzle until [solution] is its only
+  /// solution. Where another solution differs, the cage there first gets a
+  /// different operation; if no operation rules the other solution out, the
+  /// differing cell becomes a cage of its own.
+  List<Cage> _makeUnique(List<List<int>> solution,
+      List<List<(int, int)>> groups, Difficulty difficulty) {
+    final size = solution.length;
+    var cages = <Cage>[
+      for (final group in groups)
+        _cage(0, group, _pick(_operationChoices(solution, group, difficulty))),
+    ];
+    cages = _renumber(cages);
+    final combinations = <Cage, List<List<int>>>{};
+
+    while (true) {
+      final other = MathdokuSolver(size, cages, combinationCache: combinations)
+          .findOtherSolution(solution);
+      if (other == null) return cages;
+
+      final differing = [
+        for (int r = 0; r < size; r++)
+          for (int c = 0; c < size; c++)
+            if (other[r][c] != solution[r][c]) (r, c),
+      ];
+      final (dr, dc) = differing[_random.nextInt(differing.length)];
+      final index = cages
+          .indexWhere((g) => g.cells.any((p) => p.row == dr && p.col == dc));
+      final cage = cages[index];
+      final group = [for (final p in cage.cells) (p.row, p.col)];
+
+      final otherValues = [for (final (r, c) in group) other[r][c]];
+      final better =
+          _operationChoices(solution, group, difficulty, relaxed: true)
+              .where((choice) =>
+                  choice.$1 != cage.operation &&
+                  !_satisfies(choice.$1, choice.$2, otherValues))
+              .toList();
+      if (better.isNotEmpty) {
+        final (op, target) = _pick(better);
+        cages[index] = cage.copyWith(operation: op, target: target);
+        continue;
+      }
+
+      // Split: the differing cell stands alone; the rest of the cage breaks
+      // into its connected pieces.
+      final pieces = [
+        [(dr, dc)],
+        ..._connectedPieces(group.where((p) => p != (dr, dc)).toList()),
+      ];
+      cages.removeAt(index);
+      for (final piece in pieces) {
+        cages.add(_cage(
+            0, piece, _pick(_operationChoices(solution, piece, difficulty))));
+      }
+      cages = _renumber(cages);
+    }
+  }
+
+  List<Cage> _renumber(List<Cage> cages) =>
+      [for (var i = 0; i < cages.length; i++) cages[i].copyWith(id: i)];
+
+  Cage _cage(int id, List<(int, int)> group, (Operation, int) clue) {
+    final sorted = [...group]..sort(
+        (a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
+    return Cage(
+      id: id,
+      cells: sorted.map((p) => CagePos(row: p.$1, col: p.$2)).toList(),
+      operation: clue.$1,
+      target: clue.$2,
+    );
+  }
+
+  List<List<(int, int)>> _connectedPieces(List<(int, int)> cells) {
+    final remaining = cells.toSet();
+    final pieces = <List<(int, int)>>[];
+    while (remaining.isNotEmpty) {
+      final start = remaining.first;
+      remaining.remove(start);
+      final piece = [start];
+      for (var i = 0; i < piece.length; i++) {
+        final (r, c) = piece[i];
+        for (final n in [(r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)]) {
+          if (remaining.remove(n)) piece.add(n);
+        }
+      }
+      pieces.add(piece);
+    }
+    return pieces;
+  }
+
+  bool _satisfies(Operation op, int target, List<int> values) {
+    final sorted = [...values]..sort();
+    return switch (op) {
+      Operation.given => values.single == target,
+      Operation.add => values.fold(0, (a, b) => a + b) == target,
+      Operation.multiply => values.fold(1, (a, b) => a * b) == target,
+      Operation.subtract => sorted.last - sorted.first == target,
+      Operation.divide => sorted.last % sorted.first == 0 &&
+          sorted.last ~/ sorted.first == target,
+    };
   }
 
   // ── Operation assignment ────────────────────────────────────────────────────
 
-  (Operation, int) _assignOperation(
-      List<List<int>> grid, List<(int, int)> cells, Difficulty difficulty) {
+  (Operation, int) _pick(List<(Operation, int)> choices) =>
+      choices[_random.nextInt(choices.length)];
+
+  /// The operations a cage may use at this level. [relaxed] adds choices the
+  /// level normally avoids; it is only used to make a puzzle unique.
+  List<(Operation, int)> _operationChoices(
+      List<List<int>> grid, List<(int, int)> cells, Difficulty difficulty,
+      {bool relaxed = false}) {
     final values = cells.map((p) => grid[p.$1][p.$2]).toList();
 
-    if (cells.length == 1) return (Operation.given, values[0]);
+    if (cells.length == 1) return [(Operation.given, values[0])];
 
     final sum = values.fold(0, (a, b) => a + b);
     final product = values.fold(1, (a, b) => a * b);
+    final add = (Operation.add, sum);
+    final multiply = (Operation.multiply, product);
 
     if (difficulty == Difficulty.easy) {
-      if (product > 12) return (Operation.add, sum);
-      return _random.nextBool()
-          ? (Operation.add, sum)
-          : (Operation.multiply, product);
+      return product > 12 && !relaxed ? [add] : [add, multiply];
     }
 
     // Insane: only + or × — no subtract/divide (less constraint = harder to solve)
-    // 3+ cells always use × regardless of product size
+    // 3+ cells use × unless × alone can't make the puzzle unique
     if (difficulty == Difficulty.insane) {
-      if (cells.length == 2) {
-        return _random.nextBool()
-            ? (Operation.add, sum)
-            : (Operation.multiply, product);
-      }
-      return (Operation.multiply, product);
+      if (cells.length == 2 || relaxed) return [add, multiply];
+      return [multiply];
     }
 
     // Medium and Hard: 2-cell cages can use any operation
@@ -173,23 +277,17 @@ class MathdokuGenerator {
       final sorted = [...values]..sort();
       final lo = sorted.first;
       final hi = sorted.last;
-      final choices = <(Operation, int)>[
-        (Operation.add, sum),
+      return [
+        add,
         (Operation.subtract, hi - lo),
-        (Operation.multiply, product),
+        multiply,
+        if (hi % lo == 0) (Operation.divide, hi ~/ lo),
       ];
-      if (lo != 0 && hi % lo == 0) choices.add((Operation.divide, hi ~/ lo));
-      return choices[_random.nextInt(choices.length)];
     }
 
     // 3+ cells: + or × with a product threshold scaled by difficulty
     final productThreshold = difficulty == Difficulty.hard ? 120 : 24;
-    if (product <= productThreshold) {
-      return _random.nextBool()
-          ? (Operation.add, sum)
-          : (Operation.multiply, product);
-    }
-    return (Operation.add, sum);
+    return product <= productThreshold || relaxed ? [add, multiply] : [add];
   }
 
   String _clueText(Cage cage) => switch (cage.operation) {

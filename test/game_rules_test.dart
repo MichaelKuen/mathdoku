@@ -17,7 +17,8 @@ void main() {
   (int, int) firstEmpty() {
     for (var r = 0; r < board().size; r++) {
       for (var c = 0; c < board().size; c++) {
-        if (!board().getCell(r, c).isFixed && board().getCell(r, c).value == 0) {
+        if (!board().getCell(r, c).isFixed &&
+            board().getCell(r, c).value == 0) {
           return (r, c);
         }
       }
@@ -42,7 +43,8 @@ void main() {
       expect(state().elapsedSeconds, 0);
       final givensAllowed = d == Difficulty.easy || d == Difficulty.hard;
       for (final cage in board().cages) {
-        final cell = board().getCell(cage.cells.first.row, cage.cells.first.col);
+        final cell =
+            board().getCell(cage.cells.first.row, cage.cells.first.col);
         final isSingle = cage.cells.length == 1;
         expect(cell.isFixed, isSingle && givensAllowed);
         if (isSingle) expect(cage.operation, Operation.given);
@@ -84,8 +86,7 @@ void main() {
     expect(board().getCell(r, c).value, board().getSolutionValue(r, c));
   });
 
-  test('no input without a selected cell; fixed cells cannot change',
-      () async {
+  test('no input without a selected cell; fixed cells cannot change', () async {
     await notifier().startGame(Difficulty.easy);
     final before = board();
     notifier().inputNumber(1);
