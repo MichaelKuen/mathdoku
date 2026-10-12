@@ -5,7 +5,7 @@ import 'board.dart';
 part 'game_state.freezed.dart';
 
 enum GameStatus { initial, loading, playing, won, breakTime }
-enum Difficulty { easy, medium, hard }
+enum Difficulty { easy, medium, hard, insane }
 
 @freezed
 class GameState with _$GameState {

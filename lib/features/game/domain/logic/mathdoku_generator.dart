@@ -8,8 +8,9 @@ import '../models/game_state.dart';
 class MathdokuGenerator {
   final _random = Random();
 
-  // Grid size: 4 for Easy/Medium, 6 for Hard.
-  int _sizeFor(Difficulty d) => d == Difficulty.hard ? 6 : 4;
+  // Grid size: 4 for Easy/Medium, 6 for Hard/Insane.
+  int _sizeFor(Difficulty d) =>
+      (d == Difficulty.hard || d == Difficulty.insane) ? 6 : 4;
 
   Board generate(Difficulty difficulty) {
     final size = _sizeFor(difficulty);
@@ -26,8 +27,8 @@ class MathdokuGenerator {
         final cage = cages.firstWhere((g) => g.id == cageId);
         final isTopLeft =
             cage.cells.first.row == r && cage.cells.first.col == c;
-        final isGiven =
-            cage.cells.length == 1 && difficulty == Difficulty.easy;
+        final isGiven = cage.cells.length == 1 &&
+            (difficulty == Difficulty.easy || difficulty == Difficulty.hard);
         return Cell(
           value: isGiven ? solution[r][c] : 0,
           row: r,
@@ -93,6 +94,7 @@ class MathdokuGenerator {
         Difficulty.easy => _random.nextDouble() < 0.5 ? 1 : 2,
         Difficulty.medium => 4,
         Difficulty.hard => 6,
+        Difficulty.insane => 8,
       };
 
       final cageCells = <(int, int)>[(sr, sc)];
@@ -153,6 +155,17 @@ class MathdokuGenerator {
       return _random.nextBool()
           ? (Operation.add, sum)
           : (Operation.multiply, product);
+    }
+
+    // Insane: only + or × — no subtract/divide (less constraint = harder to solve)
+    // 3+ cells always use × regardless of product size
+    if (difficulty == Difficulty.insane) {
+      if (cells.length == 2) {
+        return _random.nextBool()
+            ? (Operation.add, sum)
+            : (Operation.multiply, product);
+      }
+      return (Operation.multiply, product);
     }
 
     // Medium and Hard: 2-cell cages can use any operation
