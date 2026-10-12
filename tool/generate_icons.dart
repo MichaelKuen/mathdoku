@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:image/image.dart' as img;
 
 void main() {
-  print('Generating Sudoku app icons...');
+  print('Generating Mathdoku app icons...');
 
   for (final size in [192, 512]) {
     final bytes = img.encodePng(_buildIcon(size));

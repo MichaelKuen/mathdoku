@@ -3,16 +3,10 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/cell.dart';
 import '../../domain/models/game_state.dart';
-import '../../domain/repositories/puzzle_repository.dart';
-import '../../data/repositories/puzzle_repository_impl.dart';
 import '../../domain/logic/mathdoku_engine.dart';
 import '../../domain/logic/mathdoku_generator.dart';
 
 part 'game_provider.g.dart';
-
-@riverpod
-PuzzleRepository puzzleRepository(PuzzleRepositoryRef ref) =>
-    PuzzleRepositoryImpl();
 
 @Riverpod(keepAlive: true)
 class GameNotifier extends _$GameNotifier {
