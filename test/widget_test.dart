@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:mathdoku/core/theme/app_theme.dart';
+
 import 'package:mathdoku/features/game/presentation/pages/game_page.dart';
 import 'package:mathdoku/features/game/presentation/providers/game_provider.dart';
 import 'package:mathdoku/features/home/presentation/pages/home_page.dart';
@@ -37,6 +39,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(GamePage), findsOneWidget);
+    // Mobile keeps its own colours.
+    final page = tester.element(find.byType(GamePage));
+    expect(Theme.of(page).scaffoldBackgroundColor, kBackground);
+    expect(GameColors.of(page), GameColors.mobile);
 
     final container =
         ProviderScope.containerOf(tester.element(find.byType(GamePage)));

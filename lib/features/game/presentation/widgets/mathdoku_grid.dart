@@ -34,7 +34,7 @@ class MathdokuGrid extends ConsumerWidget {
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: kPrimary, width: 3),
+          border: Border.all(color: GameColors.of(context).frame, width: 3),
           borderRadius: BorderRadius.circular(8),
         ),
         child: ClipRRect(
@@ -138,12 +138,12 @@ class _MathdokuCell extends ConsumerWidget {
     required this.cellSize,
   });
 
-  Color _bgColor() {
+  Color _bgColor(GameColors colors) {
     final base = kCageColors[cell.cageId % kCageColors.length];
 
-    if (cell.isSelected) return kPrimary.withValues(alpha: 0.50);
+    if (cell.isSelected) return colors.selection.withValues(alpha: 0.50);
     if (cell.isSameNumber) {
-      return Color.alphaBlend(kSecondary.withValues(alpha: 0.35), base);
+      return Color.alphaBlend(colors.sameNumber.withValues(alpha: 0.35), base);
     }
     if (cell.isHighlighted) {
       return Color.alphaBlend(Colors.black.withValues(alpha: 0.10), base);
@@ -264,7 +264,7 @@ class _MathdokuCell extends ConsumerWidget {
       child: Container(
         // No border on individual cells — cage outlines are painted by
         // _CageBorderPainter so they never double-draw or mis-align.
-        color: _bgColor(),
+        color: _bgColor(GameColors.of(context)),
         child: content,
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mathdoku/core/providers/web_mode_provider.dart';
+import 'package:mathdoku/core/theme/app_theme.dart';
 import 'package:mathdoku/features/game/domain/models/game_state.dart';
 import 'package:mathdoku/features/game/presentation/pages/break_page.dart';
 import 'package:mathdoku/features/game/presentation/pages/game_page.dart';
@@ -53,6 +54,9 @@ void main() {
     final state = container.read(gameNotifierProvider);
     expect(state.status, GameStatus.playing);
     expect(state.difficulty, Difficulty.easy);
+    final theme = Theme.of(tester.element(find.byType(GamePage)));
+    expect(theme.scaffoldBackgroundColor, kSiteIvory);
+    expect(GameColors.of(tester.element(find.byType(GamePage))), GameColors.web);
     expectOnlyBundledCharacters(tester);
 
     // Notes mode shows a check mark; a finished digit shows one on its key.

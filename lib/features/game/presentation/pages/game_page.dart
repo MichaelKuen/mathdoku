@@ -419,7 +419,7 @@ class _StatsBar extends StatelessWidget {
     final seconds = (gameState.elapsedSeconds % 60).toString().padLeft(2, '0');
 
     return Container(
-      color: kPrimary.withValues(alpha: 0.08),
+      color: GameColors.of(context).statsBar,
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       child: Row(
         children: [
@@ -470,10 +470,10 @@ class _StatsBar extends StatelessWidget {
                   const Text('Oops: ', style: TextStyle(fontSize: 18)),
                   Text(
                     '${gameState.mistakes}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: kPrimary,
+                      color: GameColors.of(context).mistakes,
                     ),
                   ),
                 ],

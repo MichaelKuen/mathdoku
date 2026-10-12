@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mathdoku/core/providers/web_mode_provider.dart';
+import 'package:mathdoku/core/theme/app_theme.dart';
 import 'package:mathdoku/features/game/domain/models/game_state.dart';
 import 'package:mathdoku/features/game/presentation/pages/game_page.dart';
 import 'package:mathdoku/features/game/presentation/providers/game_provider.dart';
@@ -42,7 +43,7 @@ void main() {
       child: web
           ? const MathdokuApp()
           : MaterialApp(
-              theme: ThemeData(useMaterial3: true),
+              theme: kidsTheme,
               home: const GamePage(),
             ),
     ));

@@ -26,7 +26,7 @@ class MathdokuApp extends ConsumerWidget {
     final isWeb = ref.watch(webModeProvider);
     return MaterialApp(
       title: 'Mathdoku',
-      theme: kidsTheme,
+      theme: isWeb ? webTheme : kidsTheme,
       debugShowCheckedModeBanner: false,
       // Web opens straight into a game; levels are in the New game dialog.
       home:
