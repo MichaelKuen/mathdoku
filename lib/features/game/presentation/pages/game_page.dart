@@ -26,14 +26,15 @@ class GamePage extends ConsumerStatefulWidget {
 
 class _GamePageState extends ConsumerState<GamePage> {
   late ConfettiController _confettiController;
-  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
-    _focusNode = FocusNode();
+    // A global handler keeps keys working after the player clicks a button
+    // (focus-based listeners lose focus).
+    HardwareKeyboard.instance.addHandler(_handleKey);
     final start = widget.autoStart;
     if (start != null) {
       Future.microtask(
@@ -43,8 +44,8 @@ class _GamePageState extends ConsumerState<GamePage> {
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKey);
     _confettiController.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -76,91 +77,103 @@ class _GamePageState extends ConsumerState<GamePage> {
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
-      body: Focus(
-        focusNode: _focusNode,
-        autofocus: true,
-        onKeyEvent: _handleKeyEvent,
-        child: Stack(
-          children: [
-            gameState.status == GameStatus.loading || gameState.board == null
-                ? const Center(child: CircularProgressIndicator())
-                : Column(
-                    children: [
-                      _StatsBar(
-                        gameState: gameState,
-                        onNewGame:
-                            isWeb ? () => _showNewGameDialog(context) : null,
-                      ),
-                      Expanded(
-                        child: LayoutBuilder(builder: _playArea),
-                      ),
-                    ],
-                  ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirectionality: BlastDirectionality.explosive,
-                maxBlastForce: 25,
-                minBlastForce: 10,
-                emissionFrequency: 0.05,
-                numberOfParticles: 40,
-                gravity: 0.12,
-                colors: const [
-                  Colors.red,
-                  Colors.green,
-                  Colors.blue,
-                  Colors.yellow,
-                  Colors.pink,
-                  Colors.orange,
-                  Colors.purple,
-                  Colors.teal,
-                ],
-              ),
+      body: Stack(
+        children: [
+          gameState.status == GameStatus.loading || gameState.board == null
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    _StatsBar(
+                      gameState: gameState,
+                      onNewGame:
+                          isWeb ? () => _showNewGameDialog(context) : null,
+                    ),
+                    Expanded(
+                      child: LayoutBuilder(builder: _playArea),
+                    ),
+                  ],
+                ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              maxBlastForce: 25,
+              minBlastForce: 10,
+              emissionFrequency: 0.05,
+              numberOfParticles: 40,
+              gravity: 0.12,
+              colors: const [
+                Colors.red,
+                Colors.green,
+                Colors.blue,
+                Colors.yellow,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple,
+                Colors.teal,
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+  /// Returns true for keys the game used.
+  bool _handleKey(KeyEvent event) {
     // Act on key-down and key-repeat (repeat for held arrow keys only).
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
+
+    // Leave keys alone while a dialog or the break screen is on top.
+    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return false;
 
     final gameState = ref.read(gameNotifierProvider);
-    if (gameState.status != GameStatus.playing) {
-      return KeyEventResult.ignored;
-    }
+    final board = gameState.board;
+    if (gameState.status != GameStatus.playing || board == null) return false;
 
     final notifier = ref.read(gameNotifierProvider.notifier);
     final key = event.logicalKey;
+    final gridMax = board.size - 1;
+
+    final arrows = {
+      LogicalKeyboardKey.arrowUp,
+      LogicalKeyboardKey.arrowDown,
+      LogicalKeyboardKey.arrowLeft,
+      LogicalKeyboardKey.arrowRight,
+    };
+    // With nothing selected, the first arrow picks the first empty cell.
+    if (arrows.contains(key) && gameState.selectedRow == null) {
+      final empty = board.cells
+          .expand((row) => row)
+          .where((c) => c.value == 0 && !c.isFixed)
+          .firstOrNull;
+      notifier.selectCell(empty?.row ?? 0, empty?.col ?? 0);
+      return true;
+    }
     final curRow = gameState.selectedRow ?? 0;
     final curCol = gameState.selectedCol ?? 0;
-    final gridMax = (gameState.board?.size ?? 4) - 1;
 
     // Arrow keys — navigate the grid (also fires on key-repeat)
     if (key == LogicalKeyboardKey.arrowUp) {
       notifier.selectCell((curRow - 1).clamp(0, gridMax), curCol);
-      return KeyEventResult.handled;
+      return true;
     }
     if (key == LogicalKeyboardKey.arrowDown) {
       notifier.selectCell((curRow + 1).clamp(0, gridMax), curCol);
-      return KeyEventResult.handled;
+      return true;
     }
     if (key == LogicalKeyboardKey.arrowLeft) {
       notifier.selectCell(curRow, (curCol - 1).clamp(0, gridMax));
-      return KeyEventResult.handled;
+      return true;
     }
     if (key == LogicalKeyboardKey.arrowRight) {
       notifier.selectCell(curRow, (curCol + 1).clamp(0, gridMax));
-      return KeyEventResult.handled;
+      return true;
     }
 
     // Everything below only fires once per key-press, not on repeat.
-    if (event is KeyRepeatEvent) return KeyEventResult.ignored;
+    if (event is KeyRepeatEvent) return false;
 
     // Number keys 1–6 (main keyboard and numpad), gated to current grid size
     final numKeys = {
@@ -178,31 +191,31 @@ class _GamePageState extends ConsumerState<GamePage> {
       LogicalKeyboardKey.numpad6: 6,
     };
     final digit = numKeys[key];
-    if (digit != null && digit <= (gameState.board?.size ?? 4)) {
+    if (digit != null && digit <= board.size) {
       notifier.inputNumber(digit);
-      return KeyEventResult.handled;
+      return true;
     }
 
     // Delete / Backspace — erase selected cell
     if (key == LogicalKeyboardKey.delete ||
         key == LogicalKeyboardKey.backspace) {
       notifier.eraseCell();
-      return KeyEventResult.handled;
+      return true;
     }
 
     // H — hint
     if (key == LogicalKeyboardKey.keyH) {
       notifier.useHint();
-      return KeyEventResult.handled;
+      return true;
     }
 
     // P — toggle pencil/notes mode
     if (key == LogicalKeyboardKey.keyP) {
       notifier.togglePencilMode();
-      return KeyEventResult.handled;
+      return true;
     }
 
-    return KeyEventResult.ignored;
+    return false;
   }
 
   // Sizes come from the space the page actually gets (inside the iframe on
